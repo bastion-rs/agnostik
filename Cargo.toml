@@ -1,10 +1,10 @@
 [package]
 name        = "agnostik"
 version     = "0.0.0"
-description = "Einheit in Vielfalt. We unite everything with this software."
-license     = "MIT"
-authors     = ["Mahmut Bulut <vertexclique@gmail.com>"]
-homepage    = "https://github.com/vertexclique"
+description = "Executor Agnostic Runtime that can run your futures with your favourite Executor."
+license     = "MIT/Apache-2.0"
+authors     = ["Justus K <justus.k@protonmail.com", "Mahmut Bulut <vertexclique@gmail.com>"]
+homepage    = "https://github.com/bastion-rs/agnostik"
 
 [features]
 runtime_bastion = [
