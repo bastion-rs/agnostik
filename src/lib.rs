@@ -23,3 +23,35 @@ bastion! {
         }
     }
 }
+
+tokio! {
+    extern crate tokio;
+
+    use tokio::task::JoinHandle;
+
+    impl Agnostik {
+        pub fn spawn<T, F>(future: F) -> JoinHandle<T>
+        where
+            F: Future<Output = T> + Send + 'static,
+            T: Send + 'static,
+        {
+            tokio::spawn(future)
+        }
+    }
+}
+
+asyncstd! {
+    extern crate async_std;
+
+    use async_std::task::{self, JoinHandle};
+
+    impl Agnostik {
+        pub fn spawn<T, F>(future: F) -> JoinHandle<T>
+        where
+            F: Future<Output = T> + Send + 'static,
+            T: Send + 'static,
+        {
+            task::spawn(future)
+        }
+    }
+}
