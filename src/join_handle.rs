@@ -18,11 +18,14 @@ pub enum InnerJoinHandle<R> {
     Bastion(RecoverableHandle<R>),
     #[cfg(feature = "runtime_asyncstd")]
     AsyncStd(AsyncStdHandle<Option<R>>),
-    RemoteHandle(RemoteHandle<R>),
+    RemoteHandle(RemoteHandle<Option<R>>),
 }
 
 #[cfg(feature = "runtime_bastion")]
-impl<R> Future for JoinHandle<R> {
+impl<R> Future for JoinHandle<R>
+where
+    R: 'static + Send,
+{
     type Output = Option<R>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
