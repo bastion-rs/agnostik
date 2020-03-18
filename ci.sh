@@ -3,4 +3,5 @@
 cargo test --features=runtime_bastion
 cargo test --features=runtime_asyncstd
 cargo test --features=runtime_tokio
-cargo test --features=runtime_nostd
+# Disabled until we have async / await in no_std
+# cargo test --features=runtime_nostd
