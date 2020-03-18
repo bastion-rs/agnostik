@@ -22,10 +22,14 @@ enum InnerJoinHandle<R> {
     AsyncStd(AsyncStdHandle<Option<R>>),
     #[cfg(feature = "runtime_tokio")]
     Tokio(TokioHandle<R>),
+    #[cfg(not(any(
+        feature = "runtime_tokio",
+        feature = "runtime_asyncstd",
+        feature = "runtime_bastion"
+    )))]
     RemoteHandle(RemoteHandle<Option<R>>),
 }
 
-#[cfg(feature = "runtime_bastion")]
 impl<R> Future for JoinHandle<R>
 where
     R: 'static + Send,
@@ -44,6 +48,11 @@ where
                 Poll::Ready(val) => Poll::Ready(Some(val.expect("task failed to execute"))),
                 Poll::Pending => Poll::Pending,
             },
+            #[cfg(not(any(
+                feature = "runtime_tokio",
+                feature = "runtime_asyncstd",
+                feature = "runtime_bastion"
+            )))]
             InnerJoinHandle::RemoteHandle(ref mut handle) => Pin::new(handle).poll(cx),
         }
     }
