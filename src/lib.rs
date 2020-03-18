@@ -6,10 +6,14 @@ extern crate lightproc;
 #[cfg(feature = "runtime_tokio")]
 extern crate tokio;
 
-mod join_handle;
+pub mod join_handle;
+mod executors;
 
 use join_handle::JoinHandle;
 use std::future::Future;
+
+#[cfg(feature = "runtime_asyncstd")]
+const EXECUTOR: executors::AsyncStdExecutor = executors::AsyncStdExecutor::new();
 
 pub trait AgnostikExecutor {
     /// Spawns an asynchronous task using the underlying executor.
@@ -19,7 +23,7 @@ pub trait AgnostikExecutor {
         T: Send + 'static;
 
     /// runs the provided closure on a thread where blocking is allowed.
-    fn spawn_blocking<F, T>(future: F) -> JoinHandle<T>
+    fn spawn_blocking<F, T>(task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static;

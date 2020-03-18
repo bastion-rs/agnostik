@@ -4,6 +4,11 @@ use std::{
     task::{Context, Poll},
 };
 
+#[cfg(not(any(
+    feature = "runtime_tokio",
+    feature = "runtime_asyncstd",
+    feature = "runtime_bastion"
+)))]
 use futures::future::RemoteHandle;
 
 #[cfg(feature = "runtime_asyncstd")]
@@ -13,13 +18,13 @@ use lightproc::recoverable_handle::RecoverableHandle;
 #[cfg(feature = "runtime_tokio")]
 use tokio::task::JoinHandle as TokioHandle;
 
-pub struct JoinHandle<R>(InnerJoinHandle<R>);
+pub struct JoinHandle<R>(pub(crate) InnerJoinHandle<R>);
 
-enum InnerJoinHandle<R> {
+pub(crate) enum InnerJoinHandle<R> {
     #[cfg(feature = "runtime_bastion")]
     Bastion(RecoverableHandle<R>),
     #[cfg(feature = "runtime_asyncstd")]
-    AsyncStd(AsyncStdHandle<Option<R>>),
+    AsyncStd(AsyncStdHandle<R>),
     #[cfg(feature = "runtime_tokio")]
     Tokio(TokioHandle<R>),
     #[cfg(not(any(
@@ -27,27 +32,27 @@ enum InnerJoinHandle<R> {
         feature = "runtime_asyncstd",
         feature = "runtime_bastion"
     )))]
-    RemoteHandle(RemoteHandle<Option<R>>),
+    RemoteHandle(RemoteHandle<R>),
 }
 
 impl<R> Future for JoinHandle<R>
 where
     R: 'static + Send,
 {
-    type Output = Option<R>;
+    type Output = R;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         match self.0 {
             #[cfg(feature = "runtime_bastion")]
-            InnerJoinHandle::Bastion(ref mut handle) => Pin::new(handle).poll(cx),
+            InnerJoinHandle::Bastion(ref mut handle) => Pin::new(handle)
+                .poll(cx)
+                .map(|val| val.expect("task failed to execute")),
             #[cfg(feature = "runtime_asyncstd")]
             InnerJoinHandle::AsyncStd(ref mut handle) => Pin::new(handle).poll(cx),
             #[cfg(feature = "runtime_tokio")]
-            InnerJoinHandle::Tokio(ref mut handle) => match Pin::new(handle).poll(cx) {
-                // NOTE: Just panicing if Err is returned is probably not the best solution
-                Poll::Ready(val) => Poll::Ready(Some(val.expect("task failed to execute"))),
-                Poll::Pending => Poll::Pending,
-            },
+            InnerJoinHandle::Tokio(ref mut handle) => Pin::new(handle)
+                .poll(cx)
+                .map(|val| val.expect("task failed to execute")),
             #[cfg(not(any(
                 feature = "runtime_tokio",
                 feature = "runtime_asyncstd",
