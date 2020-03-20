@@ -3,11 +3,11 @@ use std::future::Future;
 use crate::AgnostikExecutor;
 
 #[cfg(feature = "runtime_asyncstd")]
-pub(crate) struct AsyncStdExecutor;
+pub struct AsyncStdExecutor;
 
 #[cfg(feature = "runtime_asyncstd")]
 impl AsyncStdExecutor {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         AsyncStdExecutor {}
     }
 }
@@ -42,12 +42,16 @@ impl AgnostikExecutor for AsyncStdExecutor {
 }
 
 #[cfg(feature = "runtime_tokio")]
-pub(crate) struct TokioExecutor;
+pub struct TokioExecutor(tokio::runtime::Runtime);
 
 #[cfg(feature = "runtime_tokio")]
 impl TokioExecutor {
-    pub const fn new() -> Self {
-        TokioExecutor {}
+    pub fn new() -> Self {
+        TokioExecutor(tokio::runtime::Runtime::new().expect("failed to create runtime"))
+    }
+
+    pub fn with_runtime(runtime: tokio::runtime::Runtime) -> Self {
+        TokioExecutor(runtime)
     }
 }
 
@@ -58,7 +62,7 @@ impl AgnostikExecutor for TokioExecutor {
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
     {
-        let handle = tokio::task::spawn(future);
+        let handle = self.runtime.spawn(future);
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
@@ -76,6 +80,6 @@ impl AgnostikExecutor for TokioExecutor {
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
     {
-        unimplemented!("Tokio's agnostik executor doesnt support running futures via this method")
+        self.runtime.block_on(future)
     }
 }
