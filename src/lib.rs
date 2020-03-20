@@ -25,14 +25,7 @@ pub trait AgnostikExecutor {
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static;
 
-    #[cfg(not(feature = "runtime_tokio"))]
     /// Blocks until the future has finished.
-    fn block_on<F, T>(self, future: F) -> T
-    where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static;
-
-    #[cfg(feature = "runtime_tokio")]
     fn block_on<F, T>(&mut self, future: F) -> T
     where
         F: Future<Output = T> + Send + 'static,
