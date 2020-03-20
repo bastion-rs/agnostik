@@ -14,7 +14,7 @@ impl AsyncStdExecutor {
 
 #[cfg(feature = "runtime_asyncstd")]
 impl AgnostikExecutor for AsyncStdExecutor {
-    fn spawn<F, T>(future: F) -> JoinHandle<T>
+    fn spawn<F, T>(self, future: F) -> JoinHandle<T>
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -23,7 +23,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 
-    fn spawn_blocking<F, T>(task: F) -> JoinHandle<T>
+    fn spawn_blocking<F, T>(self, task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
@@ -32,7 +32,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 
-    fn block_on<F, T>(future: F) -> T
+    fn block_on<F, T>(self, future: F) -> T
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -57,16 +57,16 @@ impl TokioExecutor {
 
 #[cfg(feature = "runtime_tokio")]
 impl AgnostikExecutor for TokioExecutor {
-    fn spawn<F, T>(future: F) -> JoinHandle<T>
+    fn spawn<F, T>(self, future: F) -> JoinHandle<T>
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
     {
-        let handle = self.runtime.spawn(future);
+        let handle = self.0.spawn(future);
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
-    fn spawn_blocking<F, T>(task: F) -> JoinHandle<T>
+    fn spawn_blocking<F, T>(self, task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
@@ -75,11 +75,11 @@ impl AgnostikExecutor for TokioExecutor {
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
-    fn block_on<F, T>(future: F) -> T
+    fn block_on<F, T>(&mut self, future: F) -> T
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
     {
-        self.runtime.block_on(future)
+        self.0.block_on(future)
     }
 }
