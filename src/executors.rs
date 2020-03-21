@@ -14,7 +14,7 @@ impl AsyncStdExecutor {
 
 #[cfg(feature = "runtime_asyncstd")]
 impl AgnostikExecutor for AsyncStdExecutor {
-    fn spawn<F, T>(self, future: F) -> JoinHandle<T>
+    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -23,7 +23,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 
-    fn spawn_blocking<F, T>(self, task: F) -> JoinHandle<T>
+    fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
@@ -32,7 +32,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 
-    fn block_on<F, T>(&mut self, future: F) -> T
+    fn block_on<F, T>(&self, future: F) -> T
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -57,7 +57,7 @@ impl TokioExecutor {
 
 #[cfg(feature = "runtime_tokio")]
 impl AgnostikExecutor for TokioExecutor {
-    fn spawn<F, T>(self, future: F) -> JoinHandle<T>
+    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -66,7 +66,7 @@ impl AgnostikExecutor for TokioExecutor {
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
-    fn spawn_blocking<F, T>(self, task: F) -> JoinHandle<T>
+    fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
@@ -75,12 +75,16 @@ impl AgnostikExecutor for TokioExecutor {
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
-    fn block_on<F, T>(&mut self, future: F) -> T
+    fn block_on<F, T>(&self, future: F) -> T
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
     {
-        self.0.block_on(future)
+        // XXX: If you need to pass runtime as mutable, there is a problem.
+        // Your code shouldn't mutate runtime or apply side effects on your runtime.
+        // If I need to do this, that means there is code which is extremely bad in Tokio.
+        let mut runtime = unsafe { &mut *(&(self.0) as *const _ as *mut tokio::runtime::Runtime) };
+        runtime.block_on(future)
     }
 }
 
@@ -102,7 +106,7 @@ use bastion_executor::prelude::*;
 
 #[cfg(feature = "runtime_bastion")]
 impl AgnostikExecutor for BastionExecutor {
-    fn spawn<F, T>(self, future: F) -> JoinHandle<T>
+    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -111,7 +115,7 @@ impl AgnostikExecutor for BastionExecutor {
         JoinHandle(InnerJoinHandle::Bastion(handle))
     }
 
-    fn spawn_blocking<F, T>(self, task: F) -> JoinHandle<T>
+    fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
@@ -120,7 +124,7 @@ impl AgnostikExecutor for BastionExecutor {
         JoinHandle(InnerJoinHandle::Bastion(handle))
     }
 
-    fn block_on<F, T>(&mut self, future: F) -> T
+    fn block_on<F, T>(&self, future: F) -> T
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,

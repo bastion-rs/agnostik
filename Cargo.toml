@@ -8,6 +8,7 @@ homepage    = "https://github.com/bastion-rs/agnostik"
 edition     = "2018"
 
 [features]
+default = ["runtime_bastion"]
 runtime_bastion = [
     "bastion-executor",
     "lightproc"
