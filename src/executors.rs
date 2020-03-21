@@ -1,5 +1,5 @@
 use crate::AgnostikExecutor;
-use join_handle::{InnerJoinHandle, JoinHandle};
+use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
 
 #[cfg(feature = "runtime_asyncstd")]
@@ -32,7 +32,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 
-    fn block_on<F, T>(self, future: F) -> T
+    fn block_on<F, T>(&mut self, future: F) -> T
     where
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
@@ -95,11 +95,13 @@ impl BastionExecutor {
 }
 
 #[cfg(feature = "runtime_bastion")]
-use lightproc::proc_stack::ProcStack;
+use lightproc::prelude::*;
+#[cfg(feature = "runtime_bastion")]
+use bastion_executor::prelude::*;
+
 
 #[cfg(feature = "runtime_bastion")]
 impl AgnostikExecutor for BastionExecutor {
-
     fn spawn<F, T>(self, future: F) -> JoinHandle<T>
     where
         F: Future<Output = T> + Send + 'static,
@@ -114,9 +116,7 @@ impl AgnostikExecutor for BastionExecutor {
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
     {
-        let handle = bastion_executor::blocking::spawn_blocking(async move {
-            task()
-        }, ProcStack::default());
+        let handle = spawn_blocking(async { task() }, ProcStack::default());
         JoinHandle(InnerJoinHandle::Bastion(handle))
     }
 
