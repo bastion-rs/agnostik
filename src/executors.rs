@@ -1,6 +1,6 @@
+use crate::AgnostikExecutor;
 use join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
-use crate::AgnostikExecutor;
 
 #[cfg(feature = "runtime_asyncstd")]
 pub struct AsyncStdExecutor;
@@ -81,5 +81,50 @@ impl AgnostikExecutor for TokioExecutor {
         T: Send + 'static,
     {
         self.0.block_on(future)
+    }
+}
+
+#[cfg(feature = "runtime_bastion")]
+pub struct BastionExecutor;
+
+#[cfg(feature = "runtime_bastion")]
+impl BastionExecutor {
+    pub fn new() -> Self {
+        BastionExecutor {}
+    }
+}
+
+#[cfg(feature = "runtime_bastion")]
+use lightproc::proc_stack::ProcStack;
+
+#[cfg(feature = "runtime_bastion")]
+impl AgnostikExecutor for BastionExecutor {
+
+    fn spawn<F, T>(self, future: F) -> JoinHandle<T>
+    where
+        F: Future<Output = T> + Send + 'static,
+        T: Send + 'static,
+    {
+        let handle = bastion_executor::pool::spawn(future, ProcStack::default());
+        JoinHandle(InnerJoinHandle::Bastion(handle))
+    }
+
+    fn spawn_blocking<F, T>(self, task: F) -> JoinHandle<T>
+    where
+        F: FnOnce() -> T + Send + 'static,
+        T: Send + 'static,
+    {
+        let handle = bastion_executor::blocking::spawn_blocking(async move {
+            task()
+        }, ProcStack::default());
+        JoinHandle(InnerJoinHandle::Bastion(handle))
+    }
+
+    fn block_on<F, T>(&mut self, future: F) -> T
+    where
+        F: Future<Output = T> + Send + 'static,
+        T: Send + 'static,
+    {
+        bastion_executor::run::run(future, ProcStack::default())
     }
 }

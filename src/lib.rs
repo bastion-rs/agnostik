@@ -1,10 +1,15 @@
 #[cfg(feature = "runtime_asyncstd")]
 extern crate async_std;
-extern crate futures;
+
 #[cfg(feature = "runtime_bastion")]
 extern crate lightproc;
+#[cfg(feature = "runtime_bastion")]
+extern crate bastion_executor;
+
 #[cfg(feature = "runtime_tokio")]
 extern crate tokio;
+
+extern crate futures;
 
 pub mod join_handle;
 mod executors;
