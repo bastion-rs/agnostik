@@ -97,9 +97,8 @@ async fn main() {
 }
 ```
 
-This would fail, because `Agnostik::tokio()` creates a new `Runtime` object.
-This operation fails, because the code is executed inside a `Runtime` created by the main macro.
-You would have to do it like this:
+This would fail with a panic.
+How to do it correctly:
 
 ```rust
 use agnostik::prelude::*;
