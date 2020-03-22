@@ -47,7 +47,7 @@ pub struct TokioExecutor(tokio::runtime::Runtime);
 #[cfg(feature = "runtime_tokio")]
 impl TokioExecutor {
     pub fn new() -> Self {
-        TokioExecutor(tokio::runtime::Runtime::new().expect("failed to create runtime"))
+        Self::with_runtime(tokio::runtime::Runtime::new().expect("failed to create runtime"))
     }
 
     pub fn with_runtime(runtime: tokio::runtime::Runtime) -> Self {
