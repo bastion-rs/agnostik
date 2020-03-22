@@ -32,9 +32,9 @@ You can choose the executor, by using cargo features.
 The default runtime is the `bastion-executor`.
 To use another executor you just have to disable the default features, and choose one of the valid features.
 Valid features are: 
+- `runtime_bastion` (default) to use the [Bastion Executor](https://crates.io/crates/bastion-executor)
 - `runtime_tokio` to use the [Tokio](https://tokio.rs) runtime
 - `runtime_asyncstd` to use the [AsyncStd](https://async.rs) runtime
-- `runtime_bastion` (default) to use the [Bastion Executor](https://crates.io/crates/bastion-executor)
 - `runtime_nostd` (coming soon) to use Agnostik in a no_std environment
 
 E.g. to use the Tokio runtime, add the following line to your Cargo.toml
@@ -69,8 +69,8 @@ If you want to use another exceutor, you just have to replace the `Agnostik::bas
 method call, with the method that corresponds to your executor.
 
 Use
-- `Agnostik::async_std()` for async std
 - `Agnostik::bastion()` for bastion
+- `Agnostik::async_std()` for async std
 - `Agnostik::tokio()` for tokio (a new `tokio::runtime::Runtime` object is created using `Runtime::new()` and will panic if it fails to create the runtime)
 - `Agnostik::tokio_with_runtime(runtime)` if you want to use your own `tokio::runtime::Runtime` object
 - `Agnostik::no_std()` (coming soon) to create a exeutor that works in a nostd environment
