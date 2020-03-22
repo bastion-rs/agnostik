@@ -4,13 +4,6 @@ use std::{
     task::{Context, Poll},
 };
 
-#[cfg(not(any(
-    feature = "runtime_tokio",
-    feature = "runtime_asyncstd",
-    feature = "runtime_bastion"
-)))]
-use futures::future::RemoteHandle;
-
 #[cfg(feature = "runtime_asyncstd")]
 use async_std::task::JoinHandle as AsyncStdHandle;
 #[cfg(feature = "runtime_bastion")]
@@ -27,12 +20,6 @@ pub(crate) enum InnerJoinHandle<R> {
     AsyncStd(AsyncStdHandle<R>),
     #[cfg(feature = "runtime_tokio")]
     Tokio(TokioHandle<R>),
-    #[cfg(not(any(
-        feature = "runtime_tokio",
-        feature = "runtime_asyncstd",
-        feature = "runtime_bastion"
-    )))]
-    RemoteHandle(RemoteHandle<R>),
 }
 
 impl<R> Future for JoinHandle<R>
@@ -53,12 +40,6 @@ where
             InnerJoinHandle::Tokio(ref mut handle) => Pin::new(handle)
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
-            #[cfg(not(any(
-                feature = "runtime_tokio",
-                feature = "runtime_asyncstd",
-                feature = "runtime_bastion"
-            )))]
-            InnerJoinHandle::RemoteHandle(ref mut handle) => Pin::new(handle).poll(cx),
         }
     }
 }

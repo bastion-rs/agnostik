@@ -1,5 +1,5 @@
-pub mod join_handle;
 mod executors;
+pub mod join_handle;
 
 use executors::*;
 use join_handle::JoinHandle;
@@ -25,49 +25,26 @@ pub trait AgnostikExecutor {
         T: Send + 'static;
 }
 
-#[cfg(feature = "runtime_bastion")]
-pub struct Agnostik(BastionExecutor);
-#[cfg(feature = "runtime_asyncstd")]
-pub struct Agnostik(AsyncStdExecutor);
-#[cfg(feature = "runtime_tokio")]
-pub struct Agnostik(TokioExecutor);
+pub struct Agnostik;
 
-impl Agnostik
-{
-    pub fn new() -> Agnostik {
-        #[cfg(feature = "runtime_bastion")]
-        return Agnostik(executors::BastionExecutor::new());
-        #[cfg(feature = "runtime_asyncstd")]
-        return Agnostik(executors::AsyncStdExecutor::new());
-        #[cfg(feature = "runtime_tokio")]
-        return Agnostik(executors::TokioExecutor::new());
-    }
-}
-
-
-impl AgnostikExecutor for Agnostik
-{
-    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
-    where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static
-    {
-        self.0.spawn(future)
+impl Agnostik {
+    #[cfg(feature = "runtime_bastion")]
+    pub fn bastion() -> impl AgnostikExecutor {
+        executors::BastionExecutor::new()
     }
 
-    fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
-    where
-        F: FnOnce() -> T + Send + 'static,
-        T: Send + 'static
-    {
-        self.0.spawn_blocking(task)
+    #[cfg(feature = "runtime_asyncstd")]
+    pub fn async_std() -> impl AgnostikExecutor {
+        executors::AsyncStdExecutor::new()
     }
 
-    fn block_on<F, T>(&self, future: F) -> T
-    where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static
-    {
-        self.0.block_on(future)
+    #[cfg(feature = "runtime_tokio")]
+    pub fn tokio() -> impl AgnostikExecutor {
+        executors::TokioExecutor::new()
+    }
+
+    #[cfg(feature = "runtime_tokio")]
+    pub fn tokio_with_runtime(runtime: tokio::runtime::Runtime) -> impl AgnostikExecutor {
+        executors::TokioExecutor::with_runtime(runtime)
     }
 }
