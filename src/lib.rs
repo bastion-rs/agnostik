@@ -22,12 +22,12 @@
 //! 
 //! If you have [cargo-edit](https://github.com/killercup/cargo-edit) installed, you can just execute 
 //! this:
-//! ```
+//! ```text
 //! cargo add agnostik
 //! ```
 //! 
 //! otherwise, add this to your Cargo.toml file
-//! ```
+//! ```text
 //! agnostik = "0.1.0"
 //! ```
 //! 
@@ -45,7 +45,7 @@
 //! - `runtime_nostd` (coming soon) to use Agnostik in a no_std environment
 //! 
 //! E.g. to use the Tokio runtime, add the following line to your Cargo.toml
-//! ```
+//! ```text
 //! agnostik = { version = "0.1.0", default-features = false, features = ["runtime_tokio"]}
 //! ```
 //! 
@@ -54,7 +54,7 @@
 //! Agnosiks API is very easy and only has a few methods to use.
 //! Here's an example with the bastion-executor.
 //! 
-//! ```rust
+//! ```ignore
 //! use agnostik::prelude::*;
 //! 
 //! fn main() {
@@ -91,7 +91,7 @@
 //! 
 //! Here's how to fix it:
 //! 
-//! ```rust
+//! ```ignore
 //! use agnostik::prelude::*;
 //! 
 //! #[tokio::main]
@@ -107,7 +107,7 @@
 //! This would fail with a panic.
 //! How to do it correctly:
 //! 
-//! ```rust
+//! ```ignore
 //! use agnostik::prelude::*;
 //! use tokio::runtime::Runtime;
 //! 
@@ -180,13 +180,15 @@ impl Agnostik {
 
     #[cfg(feature = "runtime_tokio")]
     /// Returns an [AgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
+    ///
     /// **Attention:** This method will create a new [Runtime] object using the [Runtime::new]
     /// method and will panic if it fails to create the [Runtime] object.
     /// If you want to use your own [Runtime] object, use [tokio_with_runtime] instead.
     ///
     /// [Tokio]: https://docs.rs/tokio
     /// [Runtime]: https://docs.rs/tokio/0.2.13/tokio/runtime/struct.Runtime.html
-    /// [tokio_with_runtime]: ./fn.tokio_with_runtime.html
+    /// [Runtime::new]: https://docs.rs/tokio/0.2.13/tokio/runtime/struct.Runtime.html#method.new
+    /// [tokio_with_runtime]: #method.tokio_with_runtime
     /// [AgnostikExecutor]: ../trait.AgnostikExecutor.html
     pub fn tokio() -> impl AgnostikExecutor {
         executors::TokioExecutor::new()
@@ -208,6 +210,6 @@ impl Agnostik {
 }
 
 #[allow(unused)]
-mod prelude {
+pub mod prelude {
     pub use crate::{AgnostikExecutor, Agnostik};
 }
