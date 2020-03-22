@@ -3,12 +3,6 @@
 Agnostik is a layer between your application and the executor for your async stuff.
 It lets your switch the executors smooth and easy without having to change your applications code.
 
-## Usage
-
-Agnostik can always be used when you need an executor to execute futures.
-If you use Agnostik, you can easily change the executor to be used without changing much code.
-Agnostik is especially useful for libraries that want to give their users a free choice about the executor.
-
 ## Features
 
 - Run futures and wait for them to finish
