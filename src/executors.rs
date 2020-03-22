@@ -83,7 +83,7 @@ impl AgnostikExecutor for TokioExecutor {
         // XXX: If you need to pass runtime as mutable, there is a problem.
         // Your code shouldn't mutate runtime or apply side effects on your runtime.
         // If I need to do this, that means there is code which is extremely bad in Tokio.
-        let mut runtime = unsafe { &mut *(&(self.0) as *const _ as *mut tokio::runtime::Runtime) };
+        let runtime = unsafe { &mut *(&(self.0) as *const _ as *mut tokio::runtime::Runtime) };
         runtime.block_on(future)
     }
 }

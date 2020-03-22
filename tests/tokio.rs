@@ -1,12 +1,14 @@
 pub use agnostik::*;
 
-fn main() {
-    let agnostik = Agnostik::new();
+#[cfg(feature = "runtime_tokio")]
+#[test]
+fn test_tokio() {
+    let agnostik = Agnostik::tokio();
 
     let handle = agnostik.spawn(async {
         let mut i = 0;
         while i < 5 {
-            println!("Counting from Asyncstd: {}", i);
+            println!("Counting from Tokio: {}", i);
             i+=1;
         }
     });

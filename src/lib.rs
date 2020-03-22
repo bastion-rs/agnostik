@@ -1,7 +1,6 @@
 mod executors;
 pub mod join_handle;
 
-use executors::*;
 use join_handle::JoinHandle;
 use std::future::Future;
 

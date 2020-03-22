@@ -1,12 +1,14 @@
 pub use agnostik::*;
 
-fn main() {
-    let agnostik = Agnostik::new();
+#[cfg(feature = "runtime_asyncstd")]
+#[test]
+fn test_bastion() {
+    let agnostik = Agnostik::bastion();
 
     let handle = agnostik.spawn(async {
         let mut i = 0;
         while i < 5 {
-            println!("Counting from Tokio: {}", i);
+            println!("Counting from Bastion: {}", i);
             i+=1;
         }
     });
