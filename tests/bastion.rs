@@ -1,6 +1,6 @@
-pub use agnostik::*;
+pub use agnostik::prelude::*;
 
-#[cfg(feature = "runtime_asyncstd")]
+#[cfg(feature = "runtime_bastion")]
 #[test]
 fn test_bastion() {
     let agnostik = Agnostik::bastion();

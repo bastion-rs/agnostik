@@ -3,7 +3,7 @@ use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
 
 #[cfg(feature = "runtime_asyncstd")]
-pub struct AsyncStdExecutor;
+pub(crate) struct AsyncStdExecutor;
 
 #[cfg(feature = "runtime_asyncstd")]
 impl AsyncStdExecutor {
@@ -42,7 +42,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
 }
 
 #[cfg(feature = "runtime_tokio")]
-pub struct TokioExecutor(tokio::runtime::Runtime);
+pub(crate) struct TokioExecutor(tokio::runtime::Runtime);
 
 #[cfg(feature = "runtime_tokio")]
 impl TokioExecutor {
@@ -89,7 +89,7 @@ impl AgnostikExecutor for TokioExecutor {
 }
 
 #[cfg(feature = "runtime_bastion")]
-pub struct BastionExecutor;
+pub(crate) struct BastionExecutor;
 
 #[cfg(feature = "runtime_bastion")]
 impl BastionExecutor {

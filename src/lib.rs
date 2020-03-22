@@ -47,3 +47,8 @@ impl Agnostik {
         executors::TokioExecutor::with_runtime(runtime)
     }
 }
+
+#[allow(unused)]
+mod prelude {
+    pub use crate::{AgnostikExecutor, Agnostik};
+}

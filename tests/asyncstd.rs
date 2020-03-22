@@ -1,4 +1,4 @@
-pub use agnostik::*;
+pub use agnostik::prelude::*;
 
 #[cfg(feature = "runtime_asyncstd")]
 #[test]
