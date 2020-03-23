@@ -1,5 +1,8 @@
 # Agnostik
 
+[![Crates.io](https://img.shields.io/crates/v/agnostik)](https://crates.io/crates/agnostik)
+[![CI](https://github.com/bastion-rs/bastion/workflows/CI/badge.svg)](https://github.com/bastion-rs/agnostik/actions)
+
 Agnostik is a layer between your application and the executor for your async stuff.
 It lets your switch the executors smooth and easy without having to change your applications code.
 
