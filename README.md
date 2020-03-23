@@ -44,7 +44,7 @@ agnostik = { version = "0.1.0", default-features = false, features = ["runtime_t
 
 ### Examples
 
-Agnosiks API is very easy and only has a few methods to use.
+Agnostiks API is very easy and only has a few methods to use.
 Here's an example with the bastion-executor.
 
 ```rust

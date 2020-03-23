@@ -51,7 +51,7 @@
 //! 
 //! ### Examples
 //! 
-//! Agnosiks API is very easy and only has a few methods to use.
+//! Agnostiks API is very easy and only has a few methods to use.
 //! Here's an example with the bastion-executor.
 //! 
 //! ```ignore
@@ -210,6 +210,7 @@ impl Agnostik {
 }
 
 #[allow(unused)]
+/// A prelude for the agnostik crate.
 pub mod prelude {
     pub use crate::{AgnostikExecutor, Agnostik};
 }
