@@ -1,3 +1,5 @@
+//! Generic join handle type.
+
 use std::{
     future::Future,
     pin::Pin,
@@ -11,6 +13,13 @@ use lightproc::recoverable_handle::RecoverableHandle;
 #[cfg(feature = "runtime_tokio")]
 use tokio::task::JoinHandle as TokioHandle;
 
+/// A handle that awaits the result of a task.
+///
+/// This handle will be returned by a method that spawns an
+/// asynchronous task. It then can be used to await the tasks termination.
+///
+/// **Note:** If you are using the bastion or tokio executor,
+/// agnostik will panic if the task failed to execute.
 pub struct JoinHandle<R>(pub(crate) InnerJoinHandle<R>);
 
 pub(crate) enum InnerJoinHandle<R> {
