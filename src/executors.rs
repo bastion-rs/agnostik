@@ -1,7 +1,6 @@
 use crate::AgnostikExecutor;
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
-use std::cell::RefCell;
 
 #[cfg(feature = "runtime_asyncstd")]
 pub(crate) struct AsyncStdExecutor;
@@ -41,6 +40,9 @@ impl AgnostikExecutor for AsyncStdExecutor {
         async_std::task::block_on(future)
     }
 }
+
+#[cfg(feature = "runtime_tokio")]
+use std::cell::RefCell;
 
 #[cfg(feature = "runtime_tokio")]
 pub(crate) struct TokioExecutor(RefCell<tokio::runtime::Runtime>);
