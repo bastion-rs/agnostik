@@ -1,6 +1,7 @@
 use crate::AgnostikExecutor;
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
+use std::cell::RefCell;
 
 #[cfg(feature = "runtime_asyncstd")]
 pub(crate) struct AsyncStdExecutor;
@@ -42,7 +43,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
 }
 
 #[cfg(feature = "runtime_tokio")]
-pub(crate) struct TokioExecutor(tokio::runtime::Runtime);
+pub(crate) struct TokioExecutor(RefCell<tokio::runtime::Runtime>);
 
 #[cfg(feature = "runtime_tokio")]
 impl TokioExecutor {
@@ -51,7 +52,7 @@ impl TokioExecutor {
     }
 
     pub fn with_runtime(runtime: tokio::runtime::Runtime) -> Self {
-        TokioExecutor(runtime)
+        TokioExecutor(RefCell::new(runtime))
     }
 }
 
@@ -62,7 +63,7 @@ impl AgnostikExecutor for TokioExecutor {
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
     {
-        let handle = self.0.spawn(future);
+        let handle = self.0.borrow().spawn(future);
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
@@ -80,10 +81,7 @@ impl AgnostikExecutor for TokioExecutor {
         F: Future<Output = T> + Send + 'static,
         T: Send + 'static,
     {
-        // XXX: If you need to pass runtime as mutable, there is a problem.
-        // Your code shouldn't mutate runtime or apply side effects on your runtime.
-        // If I need to do this, that means there is code which is extremely bad in Tokio.
-        let runtime = unsafe { &mut *(&(self.0) as *const _ as *mut tokio::runtime::Runtime) };
+        let mut runtime = self.0.borrow_mut();
         runtime.block_on(future)
     }
 }
