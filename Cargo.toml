@@ -24,7 +24,7 @@ runtime_tokio = [
 # ]
 
 [dependencies]
-bastion-executor = { version = "*", optional = true, features = [] }
+bastion-executor = { version = "0.3", optional = true, features = [] }
 async-std = { version = "1.3", optional = true, features = ["unstable"] }
 tokio = { version = "0.2", optional = true, features = ["rt-core", "blocking"] }
 # core = { package = "core-futures-tls", version = "0.1.0", optional = true }
