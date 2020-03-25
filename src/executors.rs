@@ -1,4 +1,4 @@
-use crate::AgnostikExecutor;
+use crate::{AgnostikExecutor, LocalAgnostikExecutor};
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
 
@@ -85,6 +85,18 @@ impl AgnostikExecutor for TokioExecutor {
         // If I need to do this, that means there is code which is extremely bad in Tokio.
         let runtime = unsafe { &mut *(&(self.0) as *const _ as *mut tokio::runtime::Runtime) };
         runtime.block_on(future)
+    }
+}
+
+#[cfg(feature = "runtime_tokio")]
+impl LocalAgnostikExecutor for AsyncStdExecutor {
+    fn spawn_local<F>(&self, future: F) -> JoinHandle<F::Output>
+    where
+        F: Future + 'static,
+        F::Output: 'static,
+    {
+        let handle = tokio::task::spawn_local(future);
+        JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 }
 
