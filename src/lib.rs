@@ -154,7 +154,7 @@ pub trait AgnostikExecutor {
         F::Output: Send + 'static;
 }
 
-/// This trait represents an executor that can spawn local futures.
+/// This trait represents an executor that is capable of spawning futures onto the same thread.
 pub trait LocalAgnostikExecutor: AgnostikExecutor {
 
     /// Spawns a future that doesn't implement [Send].
