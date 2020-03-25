@@ -1,4 +1,6 @@
-use crate::{AgnostikExecutor, LocalAgnostikExecutor};
+use crate::AgnostikExecutor;
+#[cfg(feature = "runtime_tokio")]
+use crate::LocalAgnostikExecutor;
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
 
@@ -89,7 +91,7 @@ impl AgnostikExecutor for TokioExecutor {
 }
 
 #[cfg(feature = "runtime_tokio")]
-impl LocalAgnostikExecutor for AsyncStdExecutor {
+impl LocalAgnostikExecutor for TokioExecutor {
     fn spawn_local<F>(&self, future: F) -> JoinHandle<F::Output>
     where
         F: Future + 'static,
