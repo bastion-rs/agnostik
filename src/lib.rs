@@ -136,10 +136,10 @@ use std::future::Future;
 /// and wait for a future to finish.
 pub trait AgnostikExecutor {
     /// Spawns an asynchronous task using the underlying executor.
-    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
+    fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static;
+        F: Future + Send + 'static,
+        F::Output: Send + 'static;
 
     /// Runs the provided closure on a thread, which can execute blocking tasks asynchronously. 
     fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
@@ -148,10 +148,24 @@ pub trait AgnostikExecutor {
         T: Send + 'static;
 
     /// Blocks until the future has finished.
-    fn block_on<F, T>(&self, future: F) -> T
+    fn block_on<F>(&self, future: F) -> F::Output
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static;
+        F: Future + Send + 'static,
+        F::Output: Send + 'static;
+}
+
+/// This trait represents an executor that is capable of spawning futures onto the same thread.
+pub trait LocalAgnostikExecutor: AgnostikExecutor {
+
+    /// Spawns a future that doesn't implement [Send].
+    ///
+    /// The spawned future will be executed on the same thread that called `spawn_local`.
+    ///
+    /// [Send]: https://doc.rust-lang.org/std/marker/trait.Send.html
+    fn spawn_local<F>(&self, future: F) -> JoinHandle<F::Output>
+    where
+        F: Future + 'static,
+        F::Output: 'static;
 }
 
 /// This struct doesn't have any functionality.

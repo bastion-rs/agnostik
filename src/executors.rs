@@ -1,4 +1,6 @@
 use crate::AgnostikExecutor;
+#[cfg(feature = "runtime_tokio")]
+use crate::LocalAgnostikExecutor;
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
 
@@ -14,10 +16,10 @@ impl AsyncStdExecutor {
 
 #[cfg(feature = "runtime_asyncstd")]
 impl AgnostikExecutor for AsyncStdExecutor {
-    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
+    fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         let handle = async_std::task::spawn(future);
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
@@ -32,10 +34,10 @@ impl AgnostikExecutor for AsyncStdExecutor {
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 
-    fn block_on<F, T>(&self, future: F) -> T
+    fn block_on<F>(&self, future: F) -> F::Output
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         async_std::task::block_on(future)
     }
@@ -60,10 +62,10 @@ impl TokioExecutor {
 
 #[cfg(feature = "runtime_tokio")]
 impl AgnostikExecutor for TokioExecutor {
-    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
+    fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         let handle = self.0.borrow().spawn(future);
         JoinHandle(InnerJoinHandle::Tokio(handle))
@@ -78,13 +80,25 @@ impl AgnostikExecutor for TokioExecutor {
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
-    fn block_on<F, T>(&self, future: F) -> T
+    fn block_on<F>(&self, future: F) -> F::Output
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         let mut runtime = self.0.borrow_mut();
         runtime.block_on(future)
+    }
+}
+
+#[cfg(feature = "runtime_tokio")]
+impl LocalAgnostikExecutor for TokioExecutor {
+    fn spawn_local<F>(&self, future: F) -> JoinHandle<F::Output>
+    where
+        F: Future + 'static,
+        F::Output: 'static,
+    {
+        let handle = tokio::task::spawn_local(future);
+        JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 }
 
@@ -106,10 +120,10 @@ use bastion_executor::prelude::*;
 
 #[cfg(feature = "runtime_bastion")]
 impl AgnostikExecutor for BastionExecutor {
-    fn spawn<F, T>(&self, future: F) -> JoinHandle<T>
+    fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         let handle = bastion_executor::pool::spawn(future, ProcStack::default());
         JoinHandle(InnerJoinHandle::Bastion(handle))
@@ -124,10 +138,10 @@ impl AgnostikExecutor for BastionExecutor {
         JoinHandle(InnerJoinHandle::Bastion(handle))
     }
 
-    fn block_on<F, T>(&self, future: F) -> T
+    fn block_on<F>(&self, future: F) -> F::Output
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         bastion_executor::run::run(future, ProcStack::default())
     }
