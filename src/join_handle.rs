@@ -1,6 +1,6 @@
 //! Generic join handle type.
 
-use std::{
+use core::{
     future::Future,
     pin::Pin,
     task::{Context, Poll},
@@ -22,6 +22,10 @@ use tokio::task::JoinHandle as TokioHandle;
 /// agnostik will panic if the task failed to execute.
 pub struct JoinHandle<R>(pub(crate) InnerJoinHandle<R>);
 
+pub struct NoStdJoinHandle<T> {
+    __phantom: core::marker::PhantomData<T>
+}
+
 pub(crate) enum InnerJoinHandle<R> {
     #[cfg(feature = "runtime_bastion")]
     Bastion(RecoverableHandle<R>),
@@ -29,6 +33,9 @@ pub(crate) enum InnerJoinHandle<R> {
     AsyncStd(AsyncStdHandle<R>),
     #[cfg(feature = "runtime_tokio")]
     Tokio(TokioHandle<R>),
+    #[cfg(feature = "runtime_nostd")]
+    #[allow(dead_code)]
+    NoStd(NoStdJoinHandle<R>),
 }
 
 impl<R> Future for JoinHandle<R>
@@ -49,6 +56,8 @@ where
             InnerJoinHandle::Tokio(ref mut handle) => Pin::new(handle)
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
+            #[cfg(feature = "runtime_nostd")]
+            InnerJoinHandle::NoStd(_) => panic!("no threads on no_std environments"), 
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::AgnostikExecutor;
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
-use std::future::Future;
+use core::future::Future;
 
 #[cfg(feature = "runtime_asyncstd")]
 pub(crate) struct AsyncStdExecutor;
@@ -130,5 +130,42 @@ impl AgnostikExecutor for BastionExecutor {
         T: Send + 'static,
     {
         bastion_executor::run::run(future, ProcStack::default())
+    }
+}
+
+#[cfg(feature = "runtime_nostd")]
+pub(crate) struct NoStdExecutor;
+
+#[cfg(feature = "runtime_nostd")]
+impl NoStdExecutor {
+    pub fn new() -> Self {
+        NoStdExecutor {}
+    }
+}
+
+#[cfg(feature = "runtime_nostd")]
+impl AgnostikExecutor for NoStdExecutor {
+    fn spawn<F, T>(&self, _future: F) -> JoinHandle<T>
+    where
+        F: Future<Output = T> + Send + 'static,
+        T: Send + 'static,
+    {
+        panic!("no threads on no_std environments")
+    }
+
+    fn spawn_blocking<F, T>(&self, _task: F) -> JoinHandle<T>
+    where
+        F: FnOnce() -> T + Send + 'static,
+        T: Send + 'static,
+    {
+        panic!("no threads on no_std environments")
+    }
+
+    fn block_on<F, T>(&self, future: F) -> T
+    where
+        F: Future<Output = T> + Send + 'static,
+        T: Send + 'static,
+    {
+        executor::block_on(future)
     }
 }

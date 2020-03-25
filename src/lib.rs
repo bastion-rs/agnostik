@@ -80,7 +80,7 @@
 //! - `Agnostik::async_std()` for async std
 //! - `Agnostik::tokio()` for tokio. **Warning:** See "How to use tokio runtime"
 //! - `Agnostik::tokio_with_runtime(runtime)` if you want to use your own `tokio::runtime::Runtime` object. **Warning:** See "How to use tokio runtime"
-//! - `Agnostik::no_std()` (coming soon) to create an exeutor that works in a nostd environment
+//! - `Agnostik::no_std()` (coming soon) to create an executor that works in a nostd environment
 //! 
 //! ### How to use tokio runtime
 //! 
@@ -125,12 +125,13 @@
 //! 
 //! You can replace 1 and 2 with `Agnostik::tokio()`, because this method call will
 //! create a Runtime object using `Runtime::new()`.
+#![cfg_attr(feature="runtime_nostd", no_std)]
 
 mod executors;
 pub mod join_handle;
 
 use join_handle::JoinHandle;
-use std::future::Future;
+use core::future::Future;
 
 /// This trait represents a generic executor that can spawn a future, spawn a blocking task,
 /// and wait for a future to finish.
@@ -206,6 +207,15 @@ impl Agnostik {
     /// [AgnostikExecutor]: ../trait.AgnostikExecutor.html
     pub fn tokio_with_runtime(runtime: tokio::runtime::Runtime) -> impl AgnostikExecutor {
         executors::TokioExecutor::with_runtime(runtime)
+    }
+
+    #[cfg(feature = "runtime_nostd")]
+    /// Returns an [AgnostikExecutor], that will use a no_std executor from [executor] package
+    ///
+    /// [executor]: https://docs.rs/executor
+    /// [AgnostikExecutor]: ../trait.AgnostikExecutor.html
+    pub fn no_std() -> impl AgnostikExecutor {
+        executors::NoStdExecutor::new()
     }
 }
 
