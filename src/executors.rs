@@ -1,7 +1,7 @@
+use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use crate::AgnostikExecutor;
 #[cfg(feature = "runtime_tokio")]
 use crate::LocalAgnostikExecutor;
-use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use std::future::Future;
 
 #[cfg(feature = "runtime_asyncstd")]
@@ -44,10 +44,10 @@ impl AgnostikExecutor for AsyncStdExecutor {
 }
 
 #[cfg(feature = "runtime_tokio")]
-use std::cell::RefCell;
+use atomic_refcell::AtomicRefCell;
 
 #[cfg(feature = "runtime_tokio")]
-pub(crate) struct TokioExecutor(RefCell<tokio::runtime::Runtime>);
+pub(crate) struct TokioExecutor(AtomicRefCell<tokio::runtime::Runtime>);
 
 #[cfg(feature = "runtime_tokio")]
 impl TokioExecutor {
@@ -56,7 +56,7 @@ impl TokioExecutor {
     }
 
     pub fn with_runtime(runtime: tokio::runtime::Runtime) -> Self {
-        TokioExecutor(RefCell::new(runtime))
+        TokioExecutor(AtomicRefCell::new(runtime))
     }
 }
 
@@ -113,10 +113,9 @@ impl BastionExecutor {
 }
 
 #[cfg(feature = "runtime_bastion")]
-use lightproc::prelude::*;
-#[cfg(feature = "runtime_bastion")]
 use bastion_executor::prelude::*;
-
+#[cfg(feature = "runtime_bastion")]
+use lightproc::prelude::*;
 
 #[cfg(feature = "runtime_bastion")]
 impl AgnostikExecutor for BastionExecutor {
