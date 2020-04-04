@@ -2,7 +2,7 @@ pub use agnostik::prelude::*;
 
 #[cfg(feature = "runtime_nostd")]
 #[test]
-fn test_tokio() {
+fn test_no_std() {
     let agnostik = Agnostik::no_std();
     agnostik.block_on(async {
         let mut i = 0;
