@@ -1,7 +1,7 @@
 name: CI (Linux)
 
 on: [push, pull_request]
-
+# this comment allows me to make a pull request
 jobs:
   build_and_test:
     strategy:
