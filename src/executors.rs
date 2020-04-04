@@ -2,7 +2,8 @@ use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use crate::AgnostikExecutor;
 #[cfg(feature = "runtime_tokio")]
 use crate::LocalAgnostikExecutor;
-use std::future::Future;#[cfg(feature = "runtime_asyncstd")]
+use core::future::Future;
+#[cfg(feature = "runtime_asyncstd")]
 pub(crate) struct AsyncStdExecutor;
 
 #[cfg(feature = "runtime_asyncstd")]
@@ -155,10 +156,10 @@ impl NoStdExecutor {
 
 #[cfg(feature = "runtime_nostd")]
 impl AgnostikExecutor for NoStdExecutor {
-    fn spawn<F, T>(&self, _future: F) -> JoinHandle<T>
+    fn spawn<F>(&self, _future: F) -> JoinHandle<F::Output>
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         panic!("no threads on no_std environments")
     }
@@ -171,10 +172,10 @@ impl AgnostikExecutor for NoStdExecutor {
         panic!("no threads on no_std environments")
     }
 
-    fn block_on<F, T>(&self, future: F) -> T
+    fn block_on<F>(&self, future: F) -> F::Output
     where
-        F: Future<Output = T> + Send + 'static,
-        T: Send + 'static,
+        F: Future + Send + 'static,
+        F::Output: Send + 'static,
     {
         executor::block_on(future)
     }
