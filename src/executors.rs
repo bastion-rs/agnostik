@@ -44,10 +44,10 @@ impl AgnostikExecutor for AsyncStdExecutor {
 }
 
 #[cfg(feature = "runtime_tokio")]
-use atomic_refcell::AtomicRefCell;
+use std::sync::Mutex;
 
 #[cfg(feature = "runtime_tokio")]
-pub(crate) struct TokioExecutor(AtomicRefCell<tokio::runtime::Runtime>);
+pub(crate) struct TokioExecutor(Mutex<tokio::runtime::Runtime>);
 
 #[cfg(feature = "runtime_tokio")]
 impl TokioExecutor {
@@ -56,7 +56,7 @@ impl TokioExecutor {
     }
 
     pub fn with_runtime(runtime: tokio::runtime::Runtime) -> Self {
-        TokioExecutor(AtomicRefCell::new(runtime))
+        TokioExecutor(Mutex::new(runtime))
     }
 }
 
@@ -67,7 +67,7 @@ impl AgnostikExecutor for TokioExecutor {
         F: Future + Send + 'static,
         F::Output: Send + 'static,
     {
-        let handle = self.0.borrow().spawn(future);
+        let handle = self.0.lock().unwrap().spawn(future);
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
@@ -85,8 +85,7 @@ impl AgnostikExecutor for TokioExecutor {
         F: Future + Send + 'static,
         F::Output: Send + 'static,
     {
-        let mut runtime = self.0.borrow_mut();
-        runtime.block_on(future)
+        self.0.lock().unwrap().block_on(future)
     }
 }
 
