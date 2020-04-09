@@ -172,7 +172,7 @@ impl NoStdExecutor {
 impl AgnostikExecutor for NoStdExecutor {
     fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
-        F: Future + Sized + Send + 'static,
+        F: Future + Send + 'static,
         F::Output: Send + 'static,
     {
         let handle = NoStdJoinHandle::new(future);
@@ -191,7 +191,7 @@ impl AgnostikExecutor for NoStdExecutor {
 
     fn block_on<F>(&self, future: F) -> F::Output
     where
-        F: Future + Sized + Send + 'static,
+        F: Future + Send + 'static,
         F::Output: Send + 'static,
     {
         let future: Pin<&mut dyn Future> = Pin::new(future);
