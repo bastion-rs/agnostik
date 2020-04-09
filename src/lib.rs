@@ -128,10 +128,16 @@
 
 #![cfg_attr(feature = "runtime_nostd", no_std)]
 
+#[cfg(feature = "runtime_nostd")]
+mod noop_waker;
+
 mod executors;
 pub mod join_handle;
 
+#[cfg(feature = "runtime_nostd")]
+use core::future::Future;
 use join_handle::JoinHandle;
+#[cfg(not(feature = "runtime_nostd"))]
 use std::future::Future;
 
 /// This trait represents a generic executor that can spawn a future, spawn a blocking task,

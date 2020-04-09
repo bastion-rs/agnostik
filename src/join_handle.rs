@@ -1,6 +1,14 @@
 //! Generic join handle type.
 
+#[cfg(not(feature = "runtime_nostd"))]
 use std::{
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
+
+#[cfg(feature = "runtime_nostd")]
+use core::{
     future::Future,
     pin::Pin,
     task::{Context, Poll},
@@ -29,6 +37,8 @@ pub(crate) enum InnerJoinHandle<R> {
     AsyncStd(AsyncStdHandle<R>),
     #[cfg(feature = "runtime_tokio")]
     Tokio(TokioHandle<R>),
+    #[cfg(feature = "runtime_nostd")]
+    NoStd(NoStdJoinHandle<R>),
 }
 
 impl<R> Future for JoinHandle<R>
@@ -49,6 +59,20 @@ where
             InnerJoinHandle::Tokio(ref mut handle) => Pin::new(handle)
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
+            #[cfg(feature = "runtime_nostd")]
+            InnerJoinHandle::NoStd(ref mut handle) => Pin::new(handle.inner).poll(cx),
         }
+    }
+}
+
+#[cfg(feature = "runtime_nostd")]
+pub(crate) struct NoStdJoinHandle<R> {
+    inner: dyn Future<Output = R>,
+}
+
+#[cfg(feature = "runtime_nostd")]
+impl<R> NoStdJoinHandle<R> {
+    pub(crate) fn new(inner: impl Future<Output = R>) -> Self {
+        Self { inner }
     }
 }
