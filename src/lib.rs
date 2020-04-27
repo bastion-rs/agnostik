@@ -232,6 +232,11 @@ impl Agnostik {
     pub fn tokio_with_runtime(runtime: tokio::runtime::Runtime) -> impl AgnostikExecutor {
         executors::TokioExecutor::with_runtime(runtime)
     }
+
+    #[cfg(feature = "runtime_nostd")]
+    pub fn no_std() -> impl AgnostikExecutor {
+        executors::NoStdExecutor {}
+    }
 }
 
 #[allow(unused)]
