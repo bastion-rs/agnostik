@@ -14,6 +14,9 @@ use core::{
     task::{Context, Poll},
 };
 
+#[cfg(feature = "runtime_nostd")]
+use crate::no_std::NoStdJoinHandle;
+
 #[cfg(feature = "runtime_asyncstd")]
 use async_std::task::JoinHandle as AsyncStdHandle;
 #[cfg(feature = "runtime_bastion")]
@@ -43,7 +46,7 @@ pub(crate) enum InnerJoinHandle<R> {
 
 impl<R> Future for JoinHandle<R>
 where
-    R: 'static + Send,
+    R: Send,
 {
     type Output = R;
 
@@ -60,19 +63,7 @@ where
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
             #[cfg(feature = "runtime_nostd")]
-            InnerJoinHandle::NoStd(ref mut handle) => Pin::new(handle.inner).poll(cx),
+            InnerJoinHandle::NoStd(ref mut handle) => handle.inner.as_mut().poll(cx),
         }
-    }
-}
-
-#[cfg(feature = "runtime_nostd")]
-pub(crate) struct NoStdJoinHandle<R> {
-    inner: dyn Future<Output = R>,
-}
-
-#[cfg(feature = "runtime_nostd")]
-impl<R> NoStdJoinHandle<R> {
-    pub(crate) fn new(inner: impl Future<Output = R>) -> Self {
-        Self { inner }
     }
 }

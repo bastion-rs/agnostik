@@ -1,10 +1,16 @@
+#[cfg(not(feature = "runtime_nostd"))]
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
+#[cfg(not(feature = "runtime_nostd"))]
 use crate::AgnostikExecutor;
+
 #[cfg(feature = "runtime_tokio")]
 use crate::LocalAgnostikExecutor;
 
 #[cfg(not(feature = "runtime_nostd"))]
 use std::future::Future;
+
+#[cfg(feature = "runtime_nostd")]
+pub(crate) use crate::no_std::NoStdExecutor;
 
 #[cfg(feature = "runtime_asyncstd")]
 pub(crate) struct AsyncStdExecutor;
@@ -144,63 +150,5 @@ impl AgnostikExecutor for BastionExecutor {
         F::Output: Send + 'static,
     {
         bastion_executor::run::run(future, ProcStack::default())
-    }
-}
-
-#[cfg(feature = "runtime_nostd")]
-use crate::join_handle::NoStdJoinHandle;
-#[cfg(feature = "runtime_nostd")]
-use core::task::{Waker, Context, Poll};
-#[cfg(feature = "runtime_nostd")]
-use core::pin::Pin;
-#[cfg(feature = "runtime_nostd")]
-use core::future::Future;
-
-#[cfg(feature = "runtime_nostd")]
-pub(crate) struct NoStdExecutor {
-    waker: Waker,
-}
-
-#[cfg(feature = "runtime_nostd")]
-impl NoStdExecutor {
-    pub fn new() -> Self {
-        Self { waker: crate::noop_waker::noop_waker() }
-    }
-}
-
-#[cfg(feature = "runtime_nostd")]
-impl AgnostikExecutor for NoStdExecutor {
-    fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
-    where
-        F: Future + Send + 'static,
-        F::Output: Send + 'static,
-    {
-        let handle = NoStdJoinHandle::new(future);
-        JoinHandle(InnerJoinHandle::NoStd(handle))
-    }
-
-    fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
-    where
-        F: FnOnce() -> T + Send + 'static,
-        T: Send + 'static,
-    {
-        let future = async { task() };
-        let handle = NoStdJoinHandle::new(future);
-        JoinHandle(InnerJoinHandle::NoStd(handle))
-    }
-
-    fn block_on<F>(&self, future: F) -> F::Output
-    where
-        F: Future + Send + 'static,
-        F::Output: Send + 'static,
-    {
-        let future: Pin<&mut dyn Future> = Pin::new(future);
-        let cx = &mut Context::from_waker(self.waker);
-        loop {
-            match future.poll(cx) {
-                Poll::Ready(val) => break val,
-                Poll::Pending => cx.wake(),
-            }
-        }
     }
 }

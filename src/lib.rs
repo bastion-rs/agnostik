@@ -129,6 +129,10 @@
 #![cfg_attr(feature = "runtime_nostd", no_std)]
 
 #[cfg(feature = "runtime_nostd")]
+extern crate alloc;
+#[cfg(feature = "runtime_nostd")]
+mod no_std;
+#[cfg(feature = "runtime_nostd")]
 mod noop_waker;
 
 mod executors;
