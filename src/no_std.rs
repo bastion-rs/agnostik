@@ -15,11 +15,11 @@ use core::{
 use alloc::boxed::Box;
 
 pub(crate) struct NoStdJoinHandle<R> {
-    pub(crate) inner: Pin<Box<dyn Future<Output = R>>>,
+    pub(crate) inner: Pin<Box<dyn Future<Output = R> + Send>>,
 }
 
 impl<R> NoStdJoinHandle<R> {
-    pub(crate) fn new(f: Box<dyn Future<Output = R>>) -> Self {
+    pub(crate) fn new(f: Box<dyn Future<Output = R> + Send>) -> Self {
         Self { inner: f.into() }
     }
 }
