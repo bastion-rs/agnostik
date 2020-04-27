@@ -234,6 +234,19 @@ impl Agnostik {
     }
 
     #[cfg(feature = "runtime_nostd")]
+    /// Returns an [AgnostikExecutor], that can be used in a no_std environment.
+    ///
+    /// The [spawn] and [spawn_blocking] are simply noop methods. They will just wrap
+    /// the future or closure in a [JoinHandle]. The [block_on] method is implemented by simply
+    /// creating a noop waker and calling [poll] over and over again until [Poll::Ready] is returned.
+    ///
+    /// [AgnostikExecutor]: ../trait.AgnostikExecutor.html
+    /// [spawn]: ../trait.AgnostikExecutor.html#method.spawn
+    /// [spawn_blocking]: ../trait.AgnostikExecutor.html#method.spawn_blocking
+    /// [block_on]: ../trait.AgnostikExecutor.html#method.block_on
+    /// [poll]: https://doc.rust-lang.org/std/future/trait.Future.html#tymethod.poll
+    /// [JoinHandle]: ../join_handle/struct.JoinHandle.html
+    /// [Poll::Ready]: https://doc.rust-lang.org/std/task/enum.Poll.html
     pub fn no_std() -> impl AgnostikExecutor {
         executors::NoStdExecutor {}
     }
