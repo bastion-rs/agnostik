@@ -1,5 +1,6 @@
-use crate::join_handle::{InnerJoinHandle, JoinHandle};
+use crate::join_handle::JoinHandle;
 use crate::AgnostikExecutor;
+use crate::util::map_future;
 #[cfg(feature = "runtime_tokio")]
 use crate::LocalAgnostikExecutor;
 use std::future::Future;
@@ -31,7 +32,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
         T: Send + 'static,
     {
         let handle = async_std::task::spawn_blocking(task);
-        JoinHandle(InnerJoinHandle::AsyncStd(handle))
+        JoinHandle(handle)
     }
 
     fn block_on<F>(&self, future: F) -> F::Output
@@ -124,7 +125,8 @@ impl AgnostikExecutor for BastionExecutor {
         F::Output: Send + 'static,
     {
         let handle = bastion_executor::pool::spawn(future, ProcStack::default());
-        JoinHandle(InnerJoinHandle::Bastion(handle))
+        let handle = map_future(handle, |res| res.expect("Future failed to execute"));
+        JoinHandle(Box::pin(handle))
     }
 
     fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
@@ -133,7 +135,8 @@ impl AgnostikExecutor for BastionExecutor {
         T: Send + 'static,
     {
         let handle = spawn_blocking(async { task() }, ProcStack::default());
-        JoinHandle(InnerJoinHandle::Bastion(handle))
+        let handle = map_future(handle, |res| res.expect("Future failed to execute"));
+        JoinHandle(Box::pin(handle))
     }
 
     fn block_on<F>(&self, future: F) -> F::Output
