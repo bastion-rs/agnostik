@@ -39,7 +39,7 @@ Valid features are:
 - `runtime_bastion` (default) to use the [Bastion Executor](https://crates.io/crates/bastion-executor)
 - `runtime_tokio` to use the [Tokio](https://tokio.rs) runtime
 - `runtime_asyncstd` to use the [AsyncStd](https://async.rs) runtime
-- `runtime_nostd` (coming soon) to use Agnostik in a no_std environment
+- `runtime_smol` to use the new and awesome [smol](https://docs.rs/smol) runtime
 
 E.g. to use the Tokio runtime, add the following line to your Cargo.toml
 ```
