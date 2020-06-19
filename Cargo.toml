@@ -14,23 +14,17 @@ runtime_bastion = [
     "lightproc"
 ]
 runtime_asyncstd = [
-    "async-std",
+    "async_std_crate",
 ]
 runtime_tokio = [
-    "tokio",
-    "atomic_refcell"
+    "tokio_crate"
 ]
-# runtime_nostd = [
-#     "core"
-# ]
 
 [dependencies]
-bastion-executor = { version = "0.3", optional = true, features = [] }
-async-std = { version = "1.3", optional = true, features = ["unstable"] }
-tokio = { version = "0.2", optional = true, features = ["rt-core", "blocking", "rt-util"] }
-# core = { package = "core-futures-tls", version = "0.1.0", optional = true }
+bastion-executor = { version = "0.3.4", optional = true, features = [] }
+async_std_crate = { version = "1.6.1", optional = true, features = ["unstable"], package = "async-std" }
+tokio_crate = { version = "0.2.21", optional = true, features = ["rt-core", "blocking", "rt-util"], package = "tokio" }
 lightproc = { version = "0.3.4", optional = true }
-atomic_refcell = { version = "0.1.6", optional = true }
 
-[dev-dependencies.tokio]
-features = ["rt-core", "blocking", "time" ]
+[dev-dependencies]
+tokio_crate = { version = "0.2.21", features = ["time"], package = "tokio" }

@@ -1,4 +1,5 @@
 pub use agnostik::prelude::*;
+pub use tokio_crate as tokio;
 
 #[cfg(feature = "runtime_tokio")]
 mod tokio_tests {

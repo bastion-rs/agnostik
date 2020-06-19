@@ -7,11 +7,11 @@ use std::{
 };
 
 #[cfg(feature = "runtime_asyncstd")]
-use async_std::task::JoinHandle as AsyncStdHandle;
+use async_std_crate::task::JoinHandle as AsyncStdHandle;
 #[cfg(feature = "runtime_bastion")]
 use lightproc::recoverable_handle::RecoverableHandle;
 #[cfg(feature = "runtime_tokio")]
-use tokio::task::JoinHandle as TokioHandle;
+use tokio_crate::task::JoinHandle as TokioHandle;
 
 /// A handle that awaits the result of a task.
 ///
@@ -37,7 +37,7 @@ where
 {
     type Output = R;
 
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         match self.0 {
             #[cfg(feature = "runtime_bastion")]
             InnerJoinHandle::Bastion(ref mut handle) => Pin::new(handle)
