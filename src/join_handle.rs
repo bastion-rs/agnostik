@@ -29,6 +29,8 @@ pub(crate) enum InnerJoinHandle<R> {
     AsyncStd(AsyncStdHandle<R>),
     #[cfg(feature = "runtime_tokio")]
     Tokio(TokioHandle<R>),
+    #[cfg(feature = "runtime_smol")]
+    Smol(smol_crate::Task<R>),
 }
 
 impl<R> Future for JoinHandle<R>
@@ -49,6 +51,8 @@ where
             InnerJoinHandle::Tokio(ref mut handle) => Pin::new(handle)
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
+            #[cfg(feature = "runtime_smol")]
+            InnerJoinHandle::Smol(ref mut handle) => Pin::new(handle).poll(cx),
         }
     }
 }

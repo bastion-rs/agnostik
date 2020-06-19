@@ -185,16 +185,16 @@ impl Agnostik {
     }
 
     #[cfg(feature = "runtime_asyncstd")]
-    /// Returns an [AgnostikExecutor], that will use the [AsyncStd] runtime to spawn futures.
+    /// Returns an [LocalAgnostikExecutor], that will use the [AsyncStd] runtime to spawn futures.
     ///
     /// [AsyncStd]: https://docs.rs/async_std
-    /// [AgnostikExecutor]: ./trait.AgnostikExecutor.html
+    /// [LocalAgnostikExecutor]: ./trait.LocalAgnostikExecutor.html
     pub fn async_std() -> impl LocalAgnostikExecutor {
         executors::AsyncStdExecutor::new()
     }
 
     #[cfg(feature = "runtime_tokio")]
-    /// Returns an [AgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
+    /// Returns an [LocalAgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
     ///
     /// **Attention:** This method will create a new [Runtime] object using the [Runtime::new]
     /// method and will panic if it fails to create the [Runtime] object.
@@ -204,13 +204,13 @@ impl Agnostik {
     /// [Runtime]: https://docs.rs/tokio/0.2.13/tokio/runtime/struct.Runtime.html
     /// [Runtime::new]: https://docs.rs/tokio/0.2.13/tokio/runtime/struct.Runtime.html#method.new
     /// [tokio_with_runtime]: #method.tokio_with_runtime
-    /// [AgnostikExecutor]: ../trait.AgnostikExecutor.html
+    /// [LocalAgnostikExecutor]: ../trait.LocalAgnostikExecutor.html
     pub fn tokio() -> impl LocalAgnostikExecutor {
         executors::TokioExecutor::new()
     }
 
     #[cfg(feature = "runtime_tokio")]
-    /// Returns an [AgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
+    /// Returns an [LocalAgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
     /// It will use the given [Runtime] object to spawn, and block_on futures. The spawn_blocking method
     /// will use the [tokio::task::spawn_blocking] method.
     ///
@@ -218,11 +218,20 @@ impl Agnostik {
     /// [Tokio]: https://docs.rs/tokio
     /// [Runtime]: https://docs.rs/tokio/0.2.13/tokio/runtime/struct.Runtime.html
     /// [tokio_with_runtime]: ./fn.tokio_with_runtime.html
-    /// [AgnostikExecutor]: ../trait.AgnostikExecutor.html
+    /// [LocalAgnostikExecutor]: ../trait.LocalAgnostikExecutor.html
     pub fn tokio_with_runtime(
         runtime: tokio_crate::runtime::Runtime,
     ) -> impl LocalAgnostikExecutor {
         executors::TokioExecutor::with_runtime(runtime)
+    }
+
+    /// Returns an [LocalAgnostikExecutor] that will use the [smol] runtime, to spawn and run futures.
+    ///
+    /// [smol]: https://docs.rs/smol
+    /// [LocalAgnostikExecutor]: ../trait.LocalAgnostikExecutor.html
+    #[cfg(feature = "runtime_smol")]
+    pub fn smol() -> impl LocalAgnostikExecutor {
+        executors::SmolExecutor
     }
 }
 

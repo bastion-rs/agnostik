@@ -12,3 +12,8 @@ pub(crate) use async_std::*;
 pub(crate) mod tokio;
 #[cfg(feature = "runtime_tokio")]
 pub(crate) use tokio::*;
+
+#[cfg(feature = "runtime_smol")]
+pub(crate) mod smol;
+#[cfg(feature = "runtime_smol")]
+pub(crate) use smol::*;
