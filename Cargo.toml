@@ -3,7 +3,7 @@ name        = "agnostik"
 version     = "0.1.2"
 description = "Executor Agnostic Runtime that can run your futures with your favourite Executor."
 license     = "MIT/Apache-2.0"
-authors     = ["Justus K <justus.k@protonmail.com", "Mahmut Bulut <vertexclique@gmail.com>"]
+authors     = ["Justus K <justus.k@protonmail.com>", "Mahmut Bulut <vertexclique@gmail.com>"]
 homepage    = "https://github.com/bastion-rs/agnostik"
 edition     = "2018"
 
