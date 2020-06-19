@@ -189,7 +189,7 @@ impl Agnostik {
     ///
     /// [AsyncStd]: https://docs.rs/async_std
     /// [AgnostikExecutor]: ./trait.AgnostikExecutor.html
-    pub fn async_std() -> impl AgnostikExecutor {
+    pub fn async_std() -> impl LocalAgnostikExecutor {
         executors::AsyncStdExecutor::new()
     }
 

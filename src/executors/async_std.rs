@@ -1,7 +1,7 @@
 //! The async std executor
 
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
-use crate::AgnostikExecutor;
+use crate::{AgnostikExecutor, LocalAgnostikExecutor};
 use async_std_crate as async_std;
 use std::future::Future;
 
@@ -38,5 +38,16 @@ impl AgnostikExecutor for AsyncStdExecutor {
         F::Output: Send + 'static,
     {
         async_std::task::block_on(future)
+    }
+}
+
+impl LocalAgnostikExecutor for AsyncStdExecutor {
+    fn spawn_local<F>(&self, future: F) -> JoinHandle<F::Output>
+    where
+        F: Future + 'static,
+        F::Output: 'static,
+    {
+        let handle = async_std::task::spawn_local(future);
+        JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 }
