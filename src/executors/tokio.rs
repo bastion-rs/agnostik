@@ -4,7 +4,7 @@ use std::future::Future;
 use std::sync::Mutex;
 use tokio_crate as tokio;
 
-pub(crate) struct TokioExecutor(Mutex<tokio::runtime::Runtime>);
+pub struct TokioExecutor(Mutex<tokio::runtime::Runtime>);
 
 impl TokioExecutor {
     pub fn new() -> Self {

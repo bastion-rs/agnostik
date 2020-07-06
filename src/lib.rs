@@ -64,7 +64,7 @@
 //!         println!("Hello from bastions executor!");
 //!     })
 //!     runtime.block_on(future)
-//!     
+//!
 //!     let future = runtime.spawn_blocking(|| {
 //!         expensive_blocking_method();
 //!     })
@@ -97,7 +97,7 @@
 //! #[tokio::main]
 //! async fn main() {
 //!     let runtime = Agnostik::tokio();
-//!     
+//!
 //!     let result = runtime.spawn(async_task()).await;
 //!
 //!     println!("The result is {}", result)
@@ -128,7 +128,7 @@
 #![warn(rust_2018_idioms)]
 #![warn(missing_docs)]
 
-mod executors;
+pub mod executors;
 pub mod join_handle;
 
 use join_handle::JoinHandle;
