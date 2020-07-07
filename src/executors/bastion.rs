@@ -6,7 +6,7 @@ use bastion_executor::prelude::*;
 use lightproc::prelude::*;
 use std::future::Future;
 
-pub(crate) struct BastionExecutor;
+pub struct BastionExecutor;
 
 impl BastionExecutor {
     pub fn new() -> Self {

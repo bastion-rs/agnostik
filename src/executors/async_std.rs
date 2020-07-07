@@ -5,7 +5,7 @@ use crate::{AgnostikExecutor, LocalAgnostikExecutor};
 use async_std_crate as async_std;
 use std::future::Future;
 
-pub(crate) struct AsyncStdExecutor;
+pub struct AsyncStdExecutor;
 
 impl AsyncStdExecutor {
     pub fn new() -> Self {

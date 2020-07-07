@@ -5,7 +5,7 @@ use crate::{AgnostikExecutor, LocalAgnostikExecutor};
 use smol::Task;
 use std::future::Future;
 
-pub(crate) struct SmolExecutor;
+pub struct SmolExecutor;
 
 impl AgnostikExecutor for SmolExecutor {
     fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
