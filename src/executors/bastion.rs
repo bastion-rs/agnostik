@@ -9,7 +9,7 @@ use std::future::Future;
 pub struct BastionExecutor;
 
 impl BastionExecutor {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         BastionExecutor {}
     }
 }

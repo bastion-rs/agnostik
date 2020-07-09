@@ -14,6 +14,11 @@ impl TokioExecutor {
     pub fn with_runtime(runtime: tokio::runtime::Runtime) -> Self {
         TokioExecutor(Mutex::new(runtime))
     }
+
+    pub(crate) fn set_runtime(&self, runtime: tokio::runtime::Runtime) {
+        let mut inner = self.0.lock().unwrap();
+        *inner = runtime;
+    }
 }
 
 impl AgnostikExecutor for TokioExecutor {

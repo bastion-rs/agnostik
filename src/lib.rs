@@ -72,6 +72,17 @@
 //! }
 //! ```
 //!
+//! There's also a global executor instance that can be used to spawn futures
+//! without creating and storing your own executor.
+//!
+//! ```
+//! fn main() {
+//!     let future = agnostik::spawn(async { println!("Hello from bastion executor!"); 1 });
+//!     let result = agnostik::block_on(future);
+//!     assert_eq!(result, 1);
+//! }
+//! ```
+//!
 //! If you want to use another exceutor, you just have to replace the `Agnostik::bastion()`
 //! method call, with the method that corresponds to your executor.
 //!
@@ -128,10 +139,23 @@
 #![warn(rust_2018_idioms)]
 #![warn(missing_docs)]
 
+#[cfg(feature = "runtime_bastion")]
+static EXECUTOR: Lazy<executors::BastionExecutor> = Lazy::new(|| executors::BastionExecutor);
+
+#[cfg(feature = "runtime_asyncstd")]
+static EXECUTOR: Lazy<executors::AsyncStdExecutor> = Lazy::new(|| executors::AsyncStdExecutor);
+
+#[cfg(feature = "runtime_tokio")]
+static EXECUTOR: Lazy<executors::TokioExecutor> = Lazy::new(|| executors::TokioExecutor::new());
+
+#[cfg(feature = "runtime_smol")]
+static EXECUTOR: Lazy<executors::SmolExecutor> = Lazy::new(|| executors::SmolExecutor);
+
 pub mod executors;
 pub mod join_handle;
 
 use join_handle::JoinHandle;
+use once_cell::sync::Lazy;
 use std::future::Future;
 
 /// This trait represents a generic executor that can spawn a future, spawn a blocking task,
@@ -235,8 +259,59 @@ impl Agnostik {
     }
 }
 
+/// `spawn` will use the global executor instance, which is determined by the cargo features,
+/// to spawn the given future.
+pub fn spawn<F>(future: F) -> JoinHandle<F::Output>
+where
+    F: Future + Send + 'static,
+    F::Output: Send + 'static,
+{
+    EXECUTOR.spawn(future)
+}
+
+/// `spawn_blocking` will use the global executor instance, which is determined by the cargo features,
+/// to spawn the given blocking task.
+pub fn spawn_blocking<F, T>(task: F) -> JoinHandle<T>
+where
+    F: FnOnce() -> T + Send + 'static,
+    T: Send + 'static,
+{
+    EXECUTOR.spawn_blocking(task)
+}
+
+/// `block_on` will use the global executor instance, which is determined by the cargo features,
+/// to block until the given future has finished.
+pub fn block_on<F>(future: F) -> F::Output
+where
+    F: Future + Send + 'static,
+    F::Output: Send + 'static,
+{
+    EXECUTOR.block_on(future)
+}
+
+/// `spawn_local` will use the global executor instance, which is determined by the cargo features,
+/// to spawn a `!Send` future.
+#[cfg(any(feature = "runtime_tokio", feature = "runtime_smol"))]
+pub fn spawn_local<F>(future: F) -> JoinHandle<F::Output>
+where
+    F: Future + 'static,
+    F::Output: 'static,
+{
+    EXECUTOR.spawn_local(future)
+}
+
+/// This method will set the [`tokio Runtime`] in the global executor.
+///
+/// [`tokio Runtime`]: https://docs.rs/tokio/0.2.21/tokio/runtime/struct.Runtime.html
+#[cfg(feature = "runtime_tokio")]
+pub fn set_runtime(runtime: tokio_crate::runtime::Runtime) {
+    EXECUTOR.set_runtime(runtime)
+}
+
 #[allow(unused)]
 /// A prelude for the agnostik crate.
 pub mod prelude {
-    pub use crate::{Agnostik, AgnostikExecutor, LocalAgnostikExecutor};
+    pub use crate::{
+        block_on, spawn, spawn_blocking, Agnostik, AgnostikExecutor, LocalAgnostikExecutor,
+    };
 }
