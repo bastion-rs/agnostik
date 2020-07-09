@@ -69,6 +69,18 @@ fn main() {
 }
 ```
 
+
+There's also a global executor instance that can be used to spawn futures
+without creating and storing your own executor.
+
+```rust
+fn main() {
+    let future = agnostik::spawn(async { println!("Hello from bastion executor!"); 1 });
+    let result = agnostik::block_on(future);
+    assert_eq!(result, 1);
+}
+```
+
 If you want to use another executor, you just have to replace the `Agnostik::bastion()`
 method call, with the method that corresponds to your executor.
 
