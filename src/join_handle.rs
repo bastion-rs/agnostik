@@ -13,6 +13,7 @@ use lightproc::recoverable_handle::RecoverableHandle;
 #[cfg(feature = "runtime_tokio")]
 use tokio_crate::task::JoinHandle as TokioHandle;
 
+#[derive(Debug)]
 /// A handle that awaits the result of a task.
 ///
 /// This handle will be returned by a method that spawns an
@@ -22,6 +23,7 @@ use tokio_crate::task::JoinHandle as TokioHandle;
 /// agnostik will panic if the task failed to execute.
 pub struct JoinHandle<R>(pub(crate) InnerJoinHandle<R>);
 
+#[derive(Debug)]
 pub(crate) enum InnerJoinHandle<R> {
     #[cfg(feature = "runtime_bastion")]
     Bastion(RecoverableHandle<R>),
