@@ -21,10 +21,13 @@ use tokio_crate::task::JoinHandle as TokioHandle;
 ///
 /// **Note:** If you are using the bastion or tokio executor,
 /// agnostik will panic if the task failed to execute.
-pub struct JoinHandle<R>(pub(crate) InnerJoinHandle<R>);
+pub struct JoinHandle<R>(pub InnerJoinHandle<R>);
 
 #[derive(Debug)]
-pub(crate) enum InnerJoinHandle<R> {
+///
+/// Inner join handle representation to hold variants
+/// of the executors
+pub enum InnerJoinHandle<R> {
     #[cfg(feature = "runtime_bastion")]
     Bastion(RecoverableHandle<R>),
     #[cfg(feature = "runtime_asyncstd")]
