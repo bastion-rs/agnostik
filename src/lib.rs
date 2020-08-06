@@ -308,6 +308,18 @@ pub fn set_runtime(runtime: tokio_crate::runtime::Runtime) {
     EXECUTOR.set_runtime(runtime)
 }
 
+/// Returns a reference to the global executor.
+#[cfg(not(any(feature = "runtime_tokio", feature = "runtime_smol")))]
+pub fn executor() -> &'static impl AgnostikExecutor {
+    &*EXECUTOR
+}
+
+/// Returns a reference to the global executor
+#[cfg(any(feature = "runtime_tokio", feature = "runtime_smol"))]
+pub fn executor() -> &'static impl LocalAgnostikExecutor {
+    &*EXECUTOR
+}
+
 #[allow(unused)]
 /// A prelude for the agnostik crate.
 pub mod prelude {
