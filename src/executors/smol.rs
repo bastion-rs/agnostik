@@ -22,7 +22,9 @@ impl AgnostikExecutor for SmolExecutor {
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
     {
-        let task = Task::blocking(async { task() });
+        let task = Task::spawn(async {
+            smol::Unblock::new(()).with_mut(move |_| task()).await
+        });
         JoinHandle(InnerJoinHandle::Smol(task))
     }
 

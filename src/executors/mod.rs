@@ -1,19 +1,19 @@
-#[cfg(feature = "runtime_bastion")]
+#[cfg(bastion)]
 pub mod bastion;
-#[cfg(feature = "runtime_bastion")]
+#[cfg(bastion)]
 pub use bastion::*;
 
-#[cfg(feature = "runtime_asyncstd")]
+#[cfg(async_std)]
 pub mod async_std;
-#[cfg(feature = "runtime_asyncstd")]
+#[cfg(async_std)]
 pub use async_std::*;
 
-#[cfg(feature = "runtime_tokio")]
+#[cfg(tokio)]
 pub mod tokio;
-#[cfg(feature = "runtime_tokio")]
+#[cfg(tokio)]
 pub use tokio::*;
 
-#[cfg(feature = "runtime_smol")]
+#[cfg(smol)]
 pub mod smol;
-#[cfg(feature = "runtime_smol")]
+#[cfg(smol)]
 pub use smol::*;

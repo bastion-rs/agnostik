@@ -2,18 +2,18 @@
 
 use std::{
     future::Future,
+    marker::PhantomData,
     pin::Pin,
     task::{Context, Poll},
 };
 
-#[cfg(feature = "runtime_asyncstd")]
+#[cfg(async_std)]
 use async_std_crate::task::JoinHandle as AsyncStdHandle;
-#[cfg(feature = "runtime_bastion")]
+#[cfg(bastion)]
 use lightproc::recoverable_handle::RecoverableHandle;
-#[cfg(feature = "runtime_tokio")]
+#[cfg(tokio)]
 use tokio_crate::task::JoinHandle as TokioHandle;
 
-#[derive(Debug)]
 /// A handle that awaits the result of a task.
 ///
 /// This handle will be returned by a method that spawns an
@@ -21,21 +21,22 @@ use tokio_crate::task::JoinHandle as TokioHandle;
 ///
 /// **Note:** If you are using the bastion or tokio executor,
 /// agnostik will panic if the task failed to execute.
-pub struct JoinHandle<R>(pub InnerJoinHandle<R>);
+#[pin_project::pin_project]
+pub struct JoinHandle<R>(#[pin] pub InnerJoinHandle<R>);
 
-#[derive(Debug)]
-///
 /// Inner join handle representation to hold variants
 /// of the executors
+#[pin_project::pin_project(project = JoinHandleProj)]
 pub enum InnerJoinHandle<R> {
-    #[cfg(feature = "runtime_bastion")]
-    Bastion(RecoverableHandle<R>),
-    #[cfg(feature = "runtime_asyncstd")]
-    AsyncStd(AsyncStdHandle<R>),
-    #[cfg(feature = "runtime_tokio")]
-    Tokio(TokioHandle<R>),
-    #[cfg(feature = "runtime_smol")]
-    Smol(smol_crate::Task<R>),
+    #[cfg(bastion)]
+    Bastion(#[pin] RecoverableHandle<R>),
+    #[cfg(async_std)]
+    AsyncStd(#[pin] AsyncStdHandle<R>),
+    #[cfg(tokio)]
+    Tokio(#[pin] TokioHandle<R>),
+    #[cfg(smol)]
+    Smol(#[pin] smol_crate::Task<R>),
+    __Private(PhantomData<R>),
 }
 
 impl<R> Future for JoinHandle<R>
@@ -44,20 +45,33 @@ where
 {
     type Output = R;
 
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        self.project().0.poll(cx)
+    }
+}
+
+impl<R> Future for InnerJoinHandle<R>
+where
+    R: 'static + Send,
+{
+    type Output = R;
+
+    #[allow(unused_mut, unused_variables)]
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        match self.0 {
-            #[cfg(feature = "runtime_bastion")]
-            InnerJoinHandle::Bastion(ref mut handle) => Pin::new(handle)
+        match self.project() {
+            #[cfg(bastion)]
+            JoinHandleProj::Bastion(handle) => handle
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
-            #[cfg(feature = "runtime_asyncstd")]
-            InnerJoinHandle::AsyncStd(ref mut handle) => Pin::new(handle).poll(cx),
-            #[cfg(feature = "runtime_tokio")]
-            InnerJoinHandle::Tokio(ref mut handle) => Pin::new(handle)
+            #[cfg(async_std)]
+            JoinHandleProj::AsyncStd(handle) => handle.poll(cx),
+            #[cfg(tokio)]
+            JoinHandleProj::Tokio(handle) => handle
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
-            #[cfg(feature = "runtime_smol")]
-            InnerJoinHandle::Smol(ref mut handle) => Pin::new(handle).poll(cx),
+            #[cfg(smol)]
+            JoinHandleProj::Smol(handle) => handle.poll(cx),
+            JoinHandleProj::__Private(_) => unreachable!(),
         }
     }
 }

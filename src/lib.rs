@@ -139,26 +139,14 @@
 #![warn(rust_2018_idioms)]
 #![warn(missing_docs)]
 
-#[cfg(feature = "runtime_bastion")]
-static EXECUTOR: Lazy<executors::BastionExecutor> = Lazy::new(|| executors::BastionExecutor);
-
-#[cfg(feature = "runtime_asyncstd")]
-static EXECUTOR: Lazy<executors::AsyncStdExecutor> = Lazy::new(|| executors::AsyncStdExecutor);
-
-#[cfg(feature = "runtime_tokio")]
-static EXECUTOR: Lazy<executors::TokioExecutor> = Lazy::new(|| executors::TokioExecutor::new());
-
-#[cfg(feature = "runtime_smol")]
-static EXECUTOR: Lazy<executors::SmolExecutor> = Lazy::new(|| executors::SmolExecutor);
-
 pub mod executors;
 pub mod join_handle;
 
 use join_handle::JoinHandle;
+#[cfg(global)]
 use once_cell::sync::Lazy;
 use std::future::Future;
 
-/// This trait represents a generic executor that can spawn a future, spawn a blocking task,
 /// and wait for a future to finish.
 pub trait AgnostikExecutor {
     /// Spawns an asynchronous task using the underlying executor.
@@ -199,25 +187,24 @@ pub trait LocalAgnostikExecutor: AgnostikExecutor {
 pub struct Agnostik;
 
 impl Agnostik {
-    #[cfg(feature = "runtime_bastion")]
     /// Returns an [AgnostikExecutor], that will use [bastion-executor] to spawn futures.
     ///
     /// [bastion-executor]: https://docs.rs/bastion-executor
     /// [AgnostikExecutor]: ./trait.AgnostikExecutor.html
+    #[cfg(bastion)]
     pub fn bastion() -> impl AgnostikExecutor {
         executors::BastionExecutor::new()
     }
 
-    #[cfg(feature = "runtime_asyncstd")]
     /// Returns an [LocalAgnostikExecutor], that will use the [AsyncStd] runtime to spawn futures.
     ///
     /// [AsyncStd]: https://docs.rs/async_std
     /// [LocalAgnostikExecutor]: ./trait.LocalAgnostikExecutor.html
+    #[cfg(async_std)]
     pub fn async_std() -> impl LocalAgnostikExecutor {
         executors::AsyncStdExecutor::new()
     }
 
-    #[cfg(feature = "runtime_tokio")]
     /// Returns an [LocalAgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
     ///
     /// **Attention:** This method will create a new [Runtime] object using the [Runtime::new]
@@ -229,11 +216,11 @@ impl Agnostik {
     /// [Runtime::new]: https://docs.rs/tokio/0.2.13/tokio/runtime/struct.Runtime.html#method.new
     /// [tokio_with_runtime]: #method.tokio_with_runtime
     /// [LocalAgnostikExecutor]: ../trait.LocalAgnostikExecutor.html
+    #[cfg(tokio)]
     pub fn tokio() -> impl LocalAgnostikExecutor {
         executors::TokioExecutor::new()
     }
 
-    #[cfg(feature = "runtime_tokio")]
     /// Returns an [LocalAgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
     /// It will use the given [Runtime] object to spawn, and block_on futures. The spawn_blocking method
     /// will use the [tokio::task::spawn_blocking] method.
@@ -243,6 +230,7 @@ impl Agnostik {
     /// [Runtime]: https://docs.rs/tokio/0.2.13/tokio/runtime/struct.Runtime.html
     /// [tokio_with_runtime]: ./fn.tokio_with_runtime.html
     /// [LocalAgnostikExecutor]: ../trait.LocalAgnostikExecutor.html
+    #[cfg(tokio)]
     pub fn tokio_with_runtime(
         runtime: tokio_crate::runtime::Runtime,
     ) -> impl LocalAgnostikExecutor {
@@ -253,7 +241,7 @@ impl Agnostik {
     ///
     /// [smol]: https://docs.rs/smol
     /// [LocalAgnostikExecutor]: ../trait.LocalAgnostikExecutor.html
-    #[cfg(feature = "runtime_smol")]
+    #[cfg(smol)]
     pub fn smol() -> impl LocalAgnostikExecutor {
         executors::SmolExecutor
     }
@@ -261,69 +249,105 @@ impl Agnostik {
 
 /// `spawn` will use the global executor instance, which is determined by the cargo features,
 /// to spawn the given future.
+#[cfg(global)]
 pub fn spawn<F>(future: F) -> JoinHandle<F::Output>
 where
     F: Future + Send + 'static,
     F::Output: Send + 'static,
 {
-    EXECUTOR.spawn(future)
+    executor().spawn(future)
 }
 
 /// `spawn_blocking` will use the global executor instance, which is determined by the cargo features,
 /// to spawn the given blocking task.
+#[cfg(global)]
 pub fn spawn_blocking<F, T>(task: F) -> JoinHandle<T>
 where
     F: FnOnce() -> T + Send + 'static,
     T: Send + 'static,
 {
-    EXECUTOR.spawn_blocking(task)
+    executor().spawn_blocking(task)
 }
 
 /// `block_on` will use the global executor instance, which is determined by the cargo features,
 /// to block until the given future has finished.
+#[cfg(global)]
 pub fn block_on<F>(future: F) -> F::Output
 where
     F: Future + Send + 'static,
     F::Output: Send + 'static,
 {
-    EXECUTOR.block_on(future)
+    executor().block_on(future)
 }
 
 /// `spawn_local` will use the global executor instance, which is determined by the cargo features,
 /// to spawn a `!Send` future.
-#[cfg(any(feature = "runtime_tokio", feature = "runtime_smol"))]
+#[cfg(spawn_local)]
 pub fn spawn_local<F>(future: F) -> JoinHandle<F::Output>
 where
     F: Future + 'static,
     F::Output: 'static,
 {
-    EXECUTOR.spawn_local(future)
+    executor().spawn_local(future)
 }
 
 /// This method will set the [`tokio Runtime`] in the global executor.
 ///
 /// [`tokio Runtime`]: https://docs.rs/tokio/0.2.21/tokio/runtime/struct.Runtime.html
-#[cfg(feature = "runtime_tokio")]
+#[cfg(tokio)]
 pub fn set_runtime(runtime: tokio_crate::runtime::Runtime) {
-    EXECUTOR.set_runtime(runtime)
+    use std::any::Any;
+
+    let executor = executor() as &dyn Any;
+    match executor.downcast_ref::<executors::TokioExecutor>() {
+        Some(executor) => executor.set_runtime(runtime),
+        None => unreachable!(),
+    }
 }
 
 /// Returns a reference to the global executor.
-#[cfg(not(any(feature = "runtime_tokio", feature = "runtime_smol")))]
+#[cfg(all(global, not(local_spawn)))]
 pub fn executor() -> &'static impl AgnostikExecutor {
-    &*EXECUTOR
+    #[cfg(bastion)]
+    let executor = || {
+        static EXECUTOR: Lazy<executors::BastionExecutor> =
+            Lazy::new(|| executors::BastionExecutor {});
+        &*EXECUTOR
+    };
+
+    #[cfg(async_std)]
+    let executor = || {
+        static EXECUTOR: Lazy<executors::AsyncStdExecutor> =
+            Lazy::new(|| executors::AsyncStdExecutor {});
+        &*EXECUTOR
+    };
+
+    executor()
 }
 
 /// Returns a reference to the global executor
-#[cfg(any(feature = "runtime_tokio", feature = "runtime_smol"))]
+#[cfg(all(local_spawn, global))]
 pub fn executor() -> &'static impl LocalAgnostikExecutor {
-    &*EXECUTOR
+    #[cfg(tokio)]
+    let executor = || {
+        static EXECUTOR: Lazy<executors::TokioExecutor> =
+            Lazy::new(|| executors::TokioExecutor::new());
+        &*EXECUTOR
+    };
+    #[cfg(tokio)]
+    let executor = || {
+        static EXECUTOR: Lazy<executors::SmolExecutor> = Lazy::new(|| executors::SmolExecutor {});
+        &*EXECUTOR
+    };
+
+    executor()
 }
 
-#[allow(unused)]
 /// A prelude for the agnostik crate.
+#[allow(unused)]
 pub mod prelude {
-    pub use crate::{
-        block_on, spawn, spawn_blocking, Agnostik, AgnostikExecutor, LocalAgnostikExecutor,
-    };
+    pub use crate::{Agnostik, AgnostikExecutor, LocalAgnostikExecutor};
+
+    #[cfg(global)]
+    pub use crate::{block_on, spawn, spawn_blocking};
 }
