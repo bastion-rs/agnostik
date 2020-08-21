@@ -308,17 +308,16 @@ pub fn set_runtime(runtime: tokio_crate::runtime::Runtime) {
 /// Returns a reference to the global executor.
 #[cfg(all(global, not(local_spawn)))]
 pub fn executor() -> &'static impl AgnostikExecutor {
-    #[cfg(bastion)]
-    let executor = || {
-        static EXECUTOR: Lazy<executors::BastionExecutor> =
-            Lazy::new(|| executors::BastionExecutor {});
-        &*EXECUTOR
-    };
-
     #[cfg(async_std)]
     let executor = || {
         static EXECUTOR: Lazy<executors::AsyncStdExecutor> =
             Lazy::new(|| executors::AsyncStdExecutor {});
+        &*EXECUTOR
+    };
+    #[cfg(bastion)]
+    let executor = || {
+        static EXECUTOR: Lazy<executors::BastionExecutor> =
+            Lazy::new(|| executors::BastionExecutor {});
         &*EXECUTOR
     };
 
@@ -334,7 +333,7 @@ pub fn executor() -> &'static impl LocalAgnostikExecutor {
             Lazy::new(|| executors::TokioExecutor::new());
         &*EXECUTOR
     };
-    #[cfg(tokio)]
+    #[cfg(smol)]
     let executor = || {
         static EXECUTOR: Lazy<executors::SmolExecutor> = Lazy::new(|| executors::SmolExecutor {});
         &*EXECUTOR

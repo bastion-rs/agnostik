@@ -46,19 +46,19 @@ jobs:
 
       - name: check build
         run: |
-             ./ci.sh check
+            cargo check --all-features
 
       - name: tests (nightly)
         if: matrix.version == 'nightly'
         timeout-minutes: 40
         run: |
-             ./ci.sh test
+            cargo test --all-features
 
       - name: tests (stable)
         if: matrix.version == 'stable'
         timeout-minutes: 40
         run: |
-             ./ci.sh test
+            cargo test --all-features
 
       - name: Clear the cargo caches
         run: |

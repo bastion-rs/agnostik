@@ -72,6 +72,9 @@ fn main() {
 
 There's also a global executor instance that can be used to spawn futures
 without creating and storing your own executor.
+If you specify multiple runtimes, the global executor will be the following:
+- `smol` if `tokio` and `smol` are enabled
+- `bastion` if `async_std`, `smol` and / or `tokio` is enabled
 
 ```rust
 fn main() {
