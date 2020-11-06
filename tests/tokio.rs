@@ -21,21 +21,16 @@ mod tokio_tests {
 
     #[test]
     fn test_basic_scheduler() {
-        let rt = tokio::runtime::Builder::new()
-            .basic_scheduler()
-            .enable_all()
-            .build()
-            .unwrap();
-
+        let rt = tokio::runtime::Runtime::new().unwrap();
         let rt = agnostik::Agnostik::tokio_with_runtime(rt);
         let rt = std::sync::Arc::new(rt);
 
         for _ in 0..100 {
             let rt = rt.clone();
             std::thread::spawn(move || {
-                rt.block_on(async move {
-                    tokio::time::delay_for(std::time::Duration::from_secs(1)).await
-                });
+                rt.block_on(
+                    async move { tokio::time::sleep(std::time::Duration::from_secs(1)).await },
+                );
             });
         }
     }
