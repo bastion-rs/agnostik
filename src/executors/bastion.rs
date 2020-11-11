@@ -2,7 +2,7 @@
 
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use crate::AgnostikExecutor;
-use bastion_executor::prelude::*;
+use bastion_executor::blocking::*;
 use lightproc::prelude::*;
 use std::future::Future;
 
