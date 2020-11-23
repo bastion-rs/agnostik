@@ -1,0 +1,23 @@
+[package]
+name = "agnostik-attributes"
+description = "Experimental language-level polyfills for Async Rust."
+version = "1.1.1"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/bastion-rs/agnostik"
+homepage = "https://github.com/bastion-rs/agnostik"
+documentation = "https://docs.rs/agnostik-attributes"
+authors = ["Yoshua Wuyts <yoshuawuyts@gmail.com>"]
+keywords = ["async", "await", "macro", "futures"]
+categories = ["asynchronous", "network-programming", "filesystem", "concurrency", "api-bindings"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "1.0.48", features = ["full"] }
+quote = "1.0.7"
+
+[dev-dependencies]
+agnostik = { path = "..", features = ["attributes", "runtime_bastion"] }
