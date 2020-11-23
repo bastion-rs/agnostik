@@ -9,7 +9,7 @@ fn test_bastion() {
         let mut i = 0;
         while i < 5 {
             println!("Counting from Bastion: {}", i);
-            i+=1;
+            i += 1;
         }
     });
 
