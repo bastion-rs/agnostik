@@ -14,6 +14,7 @@ impl AsyncStdExecutor {
 }
 
 impl AgnostikExecutor for AsyncStdExecutor {
+    #[cfg(not(target_os = "unknown"))]
     fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
         F: Future + Send + 'static,
@@ -23,6 +24,7 @@ impl AgnostikExecutor for AsyncStdExecutor {
         JoinHandle(InnerJoinHandle::AsyncStd(handle))
     }
 
+    #[cfg(not(target_os = "unknown"))]
     fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,

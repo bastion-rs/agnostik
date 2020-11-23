@@ -162,12 +162,14 @@ use std::future::Future;
 /// and wait for a future to finish.
 pub trait AgnostikExecutor {
     /// Spawns an asynchronous task using the underlying executor.
+    #[cfg(not(target_os = "unknown"))]
     fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
         F: Future + Send + 'static,
         F::Output: Send + 'static;
 
     /// Runs the provided closure on a thread, which can execute blocking tasks asynchronously.
+    #[cfg(not(target_os = "unknown"))]
     fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
     where
         F: FnOnce() -> T + Send + 'static,
@@ -261,6 +263,7 @@ impl Agnostik {
 
 /// `spawn` will use the global executor instance, which is determined by the cargo features,
 /// to spawn the given future.
+#[cfg(not(target_os = "unknown"))]
 pub fn spawn<F>(future: F) -> JoinHandle<F::Output>
 where
     F: Future + Send + 'static,
@@ -271,6 +274,7 @@ where
 
 /// `spawn_blocking` will use the global executor instance, which is determined by the cargo features,
 /// to spawn the given blocking task.
+#[cfg(not(target_os = "unknown"))]
 pub fn spawn_blocking<F, T>(task: F) -> JoinHandle<T>
 where
     F: FnOnce() -> T + Send + 'static,
@@ -291,7 +295,7 @@ where
 
 /// `spawn_local` will use the global executor instance, which is determined by the cargo features,
 /// to spawn a `!Send` future.
-#[cfg(any(feature = "runtime_tokio", feature = "runtime_smol"))]
+#[cfg(any(feature = "runtime_asyncstd", feature = "runtime_smol", feature = "runtime_tokio"))]
 pub fn spawn_local<F>(future: F) -> JoinHandle<F::Output>
 where
     F: Future + 'static,
@@ -324,6 +328,10 @@ pub fn executor() -> &'static impl LocalAgnostikExecutor {
 /// A prelude for the agnostik crate.
 pub mod prelude {
     pub use crate::{
-        block_on, spawn, spawn_blocking, Agnostik, AgnostikExecutor, LocalAgnostikExecutor,
+        block_on, Agnostik, AgnostikExecutor, LocalAgnostikExecutor,
     };
+    #[cfg(not(target_os = "unknown"))]
+    pub use crate::{spawn, spawn_blocking};
+    #[cfg(target_os = "unknown")]
+    pub use crate::spawn_local;
 }
