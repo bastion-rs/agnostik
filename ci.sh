@@ -9,7 +9,6 @@ if [ "$1" = "check" ]; then
     cargo check --features=runtime_tokio
     cargo check --features=runtime_smol
 elif [ "$1" = "test" ]; then
-    cargo test
     cargo test --features=runtime_bastion
     cargo test --features=runtime_asyncstd
     cargo test --features=runtime_tokio
