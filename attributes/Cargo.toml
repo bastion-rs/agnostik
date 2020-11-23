@@ -20,4 +20,4 @@ syn = { version = "1.0.48", features = ["full"] }
 quote = "1.0.7"
 
 [dev-dependencies]
-agnostik = { path = "..", features = ["attributes", "runtime_bastion"] }
+agnostik = { path = "..", features = ["attributes"] }
