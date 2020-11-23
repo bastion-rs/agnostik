@@ -77,8 +77,9 @@
 //!
 //! ```ignore
 //! fn main() {
-//!     let future = agnostik::spawn(async { println!("Hello from bastion executor!"); 1 });
-//!     let result = agnostik::block_on(future);
+//!     let result = agnostik::block_on(async {
+//!         agnostik::spawn(async { println!("Hello from bastion executor!"); 1 }).await
+//!     });
 //!     assert_eq!(result, 1);
 //! }
 //! ```
