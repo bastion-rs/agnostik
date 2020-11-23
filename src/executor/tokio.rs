@@ -31,7 +31,7 @@ impl AgnostikExecutor for TokioExecutor {
         F: Future + Send + 'static,
         F::Output: Send + 'static,
     {
-        let handle = self.0.lock().unwrap().spawn(future);
+        let handle = tokio::task::spawn(future);
         JoinHandle(InnerJoinHandle::Tokio(handle))
     }
 
