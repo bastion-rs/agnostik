@@ -75,7 +75,7 @@
 //! There's also a global executor instance that can be used to spawn futures
 //! without creating and storing your own executor.
 //!
-//! ```
+//! ```ignore
 //! fn main() {
 //!     let future = agnostik::spawn(async { println!("Hello from bastion executor!"); 1 });
 //!     let result = agnostik::block_on(future);
@@ -319,15 +319,40 @@ pub fn executor() -> &'static impl AgnostikExecutor {
     #[cfg(enable)]
     return &*EXECUTOR;
     #[cfg(not(enable))]
-    compile_error!(
-        "`agnostik` requires to have a runtime feature enabled to use the global methods"
-    )
+    {
+        struct PanicExecutor;
+        impl AgnostikExecutor for PanicExecutor {
+            fn spawn<F>(&self, _: F) -> JoinHandle<F::Output>
+            where
+                F: Future + Send + 'static,
+                F::Output: Send + 'static,
+            {
+                panic!("no runtime feature enabled.")
+            }
+
+            fn spawn_blocking<F, T>(&self, _: F) -> JoinHandle<T>
+            where
+                F: FnOnce() -> T + Send + 'static,
+                T: Send + 'static,
+            {
+                panic!("no runtime feature enabled.")
+            }
+
+            fn block_on<F>(&self, _: F) -> F::Output
+            where
+                F: Future + Send + 'static,
+                F::Output: Send + 'static,
+            {
+                panic!("no runtime feature enabled.")
+            }
+        }
+        &PanicExecutor
+    }
 }
 
 /// Returns a reference to the global executor
 #[cfg(local_spawn)]
 pub fn executor() -> &'static impl LocalAgnostikExecutor {
-    #[cfg(local_spawn)]
     &*EXECUTOR
 }
 
