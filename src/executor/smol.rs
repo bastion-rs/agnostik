@@ -1,27 +1,28 @@
-//! The bastion executor.
+use smol_crate as smol;
 
 use crate::join_handle::{InnerJoinHandle, JoinHandle};
 use crate::AgnostikExecutor;
-use bastion_executor::blocking::*;
-use lightproc::prelude::*;
 use std::future::Future;
 
-pub struct BastionExecutor;
+/// A wrapper around the `smol` crate which implements `AgnostikExecutor` and
+/// `LocalAgnostikExecutor`.
+pub struct SmolExecutor;
 
-impl BastionExecutor {
+impl SmolExecutor {
+    /// Create a new `SmolExecutor`.
     pub const fn new() -> Self {
-        BastionExecutor {}
+        Self
     }
 }
 
-impl AgnostikExecutor for BastionExecutor {
+impl AgnostikExecutor for SmolExecutor {
     fn spawn<F>(&self, future: F) -> JoinHandle<F::Output>
     where
         F: Future + Send + 'static,
         F::Output: Send + 'static,
     {
-        let handle = bastion_executor::pool::spawn(future, ProcStack::default());
-        JoinHandle(InnerJoinHandle::Bastion(handle))
+        let task = smol::spawn(future);
+        JoinHandle(InnerJoinHandle::Smol(task))
     }
 
     fn spawn_blocking<F, T>(&self, task: F) -> JoinHandle<T>
@@ -29,8 +30,8 @@ impl AgnostikExecutor for BastionExecutor {
         F: FnOnce() -> T + Send + 'static,
         T: Send + 'static,
     {
-        let handle = spawn_blocking(async { task() }, ProcStack::default());
-        JoinHandle(InnerJoinHandle::Bastion(handle))
+        let task = smol::spawn(smol::unblock(|| task()));
+        JoinHandle(InnerJoinHandle::Smol(task))
     }
 
     fn block_on<F>(&self, future: F) -> F::Output
@@ -38,6 +39,6 @@ impl AgnostikExecutor for BastionExecutor {
         F: Future + Send + 'static,
         F::Output: Send + 'static,
     {
-        bastion_executor::run::run(future, ProcStack::default())
+        smol::block_on(future)
     }
 }

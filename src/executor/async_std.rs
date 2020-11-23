@@ -5,10 +5,13 @@ use crate::{AgnostikExecutor, LocalAgnostikExecutor};
 use async_std_crate as async_std;
 use std::future::Future;
 
+/// A wrapper around the `async-std` crate which implements `AgnostikExecutor` and
+/// `LocalAgnostikExecutor`.
 pub struct AsyncStdExecutor;
 
 impl AsyncStdExecutor {
-    pub fn new() -> Self {
+    /// Create a new `AsyncStdExecutor`.
+    pub const fn new() -> Self {
         AsyncStdExecutor {}
     }
 }

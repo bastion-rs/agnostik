@@ -22,7 +22,6 @@ mod tokio_tests {
     #[test]
     fn test_basic_scheduler() {
         let rt = tokio::runtime::Runtime::new().unwrap();
-        let rt = agnostik::Agnostik::tokio_with_runtime(rt);
         let rt = std::sync::Arc::new(rt);
 
         for _ in 0..100 {

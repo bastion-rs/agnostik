@@ -4,13 +4,17 @@ use std::future::Future;
 use std::sync::Mutex;
 use tokio_crate as tokio;
 
+/// A wrapper around the `tokio` crate which implements `AgnostikExecutor` and
+/// `LocalAgnostikExecutor`.
 pub struct TokioExecutor(Mutex<tokio::runtime::Runtime>);
 
 impl TokioExecutor {
+    /// Create a new `TokioExecutor`.
     pub fn new() -> Self {
         Self::with_runtime(tokio::runtime::Runtime::new().expect("failed to create runtime"))
     }
 
+    /// Create a new `TokioExecutor` with a custom runtime.
     pub fn with_runtime(runtime: tokio::runtime::Runtime) -> Self {
         TokioExecutor(Mutex::new(runtime))
     }

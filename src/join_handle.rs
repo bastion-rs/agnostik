@@ -1,6 +1,7 @@
 //! Generic join handle type.
 
 use std::{
+    convert::Infallible,
     future::Future,
     marker::PhantomData,
     pin::Pin,
@@ -28,15 +29,22 @@ pub struct JoinHandle<R>(#[pin] pub InnerJoinHandle<R>);
 /// of the executors
 #[pin_project::pin_project(project = JoinHandleProj)]
 pub enum InnerJoinHandle<R> {
+    /// The `JoinHandle` which is used for the bastion executor.
     #[cfg(bastion)]
     Bastion(#[pin] RecoverableHandle<R>),
+    /// The `JoinHandle` which is used for the async_std runtime.
     #[cfg(async_std)]
     AsyncStd(#[pin] AsyncStdHandle<R>),
+    /// The `JoinHandle` which is used for the tokio runtime.
     #[cfg(tokio)]
     Tokio(#[pin] TokioHandle<R>),
+    /// The `JoinHandle` which is used for the smol runtime.
     #[cfg(smol)]
     Smol(#[pin] smol_crate::Task<R>),
-    __Private(PhantomData<R>),
+
+    /// Private element that can not be constructed.
+    #[doc(hidden)]
+    __Private(Infallible, PhantomData<R>),
 }
 
 impl<R> Future for JoinHandle<R>
@@ -71,7 +79,7 @@ where
                 .map(|val| val.expect("task failed to execute")),
             #[cfg(smol)]
             JoinHandleProj::Smol(handle) => handle.poll(cx),
-            JoinHandleProj::__Private(_) => unreachable!(),
+            JoinHandleProj::__Private(_, _) => unreachable!(),
         }
     }
 }

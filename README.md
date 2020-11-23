@@ -32,18 +32,18 @@ agnostik = "0.1.0"
 
 ### Switching executors
 
+**Note:** Libraries should not enable any runtime feature.
 You can choose the executor, by using cargo features.
-The default runtime is the `bastion-executor`.
-To use another executor you just have to disable the default features, and choose one of the valid features.
+There can only be one enabled runtime.
 Valid features are: 
-- `runtime_bastion` (default) to use the [Bastion Executor](https://crates.io/crates/bastion-executor)
+- `runtime_bastion` to use the [Bastion Executor](https://crates.io/crates/bastion-executor)
 - `runtime_tokio` to use the [Tokio](https://tokio.rs) runtime
 - `runtime_asyncstd` to use the [AsyncStd](https://async.rs) runtime
 - `runtime_smol` to use the new and awesome [smol](https://docs.rs/smol) runtime
 
 E.g. to use the Tokio runtime, add the following line to your Cargo.toml
 ```
-agnostik = { version = "0.1.0", default-features = false, features = ["runtime_tokio"]}
+agnostik = { version = "0.1.0", features = ["runtime_tokio"]}
 ```
 
 ### Examples
