@@ -1,4 +1,4 @@
-//! Experimental language-level polyfills for Async Rust.
+//! Executor agnostik attributes.
 //!
 //! # Examples
 //!
@@ -8,20 +8,6 @@
 //!     println!("Hello, world!");
 //! }
 //! ```
-//!
-//! # About
-//!
-//! Async Rust is a work in progress. The language has enabled us to do some
-//! fantastic things, but not everything is figured out yet. This crate exists
-//! to polyfill language-level support for async idioms before they can be part
-//! of the language.
-//!
-//! A great example of this is `async fn main`, which we first introduced as
-//! part of the [`runtime`](https://docs.rs/runtime/0.3.0-alpha.7/runtime/) crate.
-//! Its premise is that if `async fn` is required for every `await` call, it
-//! makes sense to apply that even to `fn main`. Unfortunately this would
-//! require compiler support to enable, so we've provided an experimental
-//! polyfill for it in the mean time.
 
 #![forbid(unsafe_code, future_incompatible, rust_2018_idioms)]
 #![deny(missing_debug_implementations, nonstandard_style)]
