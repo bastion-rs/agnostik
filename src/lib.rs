@@ -88,6 +88,15 @@
 //! }
 //! ```
 //!
+//! or use the attribute macros.
+//!
+//! ```
+//! #[agnostik::main]
+//! async fn main() {
+//!     println!("hello world");
+//! }
+//! ```
+//!
 //! If you want to use another exceutor, you just have to replace the `Agnostik::bastion()`
 //! method call, with the method that corresponds to your executor.
 //!
@@ -145,6 +154,8 @@
 
 pub mod executor;
 pub mod join_handle;
+#[cfg(feature = "attributes")]
+pub use agnostik_attributes::{bench, main, test};
 
 use join_handle::JoinHandle;
 #[allow(unused)]
