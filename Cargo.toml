@@ -18,7 +18,7 @@ runtime_tokio = ["tokio_crate"]
 runtime_smol = ["smol_crate"]
 
 [dependencies]
-agnostik-attributes = { path = "attributes", optional = true }
+agnostik-attributes = { version = "1.2.0", optional = true }
 bastion-executor = { version = "0.4.0", optional = true }
 async_std_crate = { version = "1.7.0", optional = true, features = ["unstable"], package = "async-std" }
 tokio_crate = { version = "0.3.4", optional = true, features = ["rt", "rt-multi-thread"], package = "tokio" }
