@@ -25,7 +25,7 @@ cargo add agnostik
 
 otherwise, add this to your Cargo.toml file
 ```
-agnostik = "0.1.0"
+agnostik = "0.2.0"
 ```
 
 ## Usage
@@ -43,7 +43,7 @@ Valid features are:
 
 E.g. to use the Tokio runtime, add the following line to your Cargo.toml
 ```
-agnostik = { version = "0.1.0", features = ["runtime_tokio"]}
+agnostik = { version = "0.2.0", features = ["runtime_tokio"]}
 ```
 
 ### Examples
