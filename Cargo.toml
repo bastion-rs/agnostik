@@ -3,7 +3,7 @@ members = [".", "attributes"]
 
 [package]
 name        = "agnostik"
-version     = "0.2.3"
+version     = "0.2.4-alpha.0"
 description = "Executor Agnostic Runtime that can run your futures with your favourite Executor."
 license     = "MIT/Apache-2.0"
 authors     = ["Justus K <justus.k@protonmail.com>", "Mahmut Bulut <vertexclique@gmail.com>"]
