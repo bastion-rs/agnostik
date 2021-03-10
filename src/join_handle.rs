@@ -12,6 +12,8 @@ use std::{
 use async_std_crate::task::JoinHandle as AsyncStdHandle;
 #[cfg(bastion)]
 use lightproc::recoverable_handle::RecoverableHandle;
+#[cfg(tokio1)]
+use tokio1_crate::task::JoinHandle as Tokio1Handle;
 #[cfg(tokio)]
 use tokio_crate::task::JoinHandle as TokioHandle;
 
@@ -38,6 +40,9 @@ pub enum InnerJoinHandle<R> {
     /// The `JoinHandle` which is used for the tokio runtime.
     #[cfg(tokio)]
     Tokio(#[pin] TokioHandle<R>),
+    /// The `JoinHandle` which is used for the tokio runtime.
+    #[cfg(tokio1)]
+    Tokio1(#[pin] Tokio1Handle<R>),
     /// The `JoinHandle` which is used for the smol runtime.
     #[cfg(smol)]
     Smol(#[pin] smol_crate::Task<R>),
@@ -75,6 +80,10 @@ where
             JoinHandleProj::AsyncStd(handle) => handle.poll(cx),
             #[cfg(tokio)]
             JoinHandleProj::Tokio(handle) => handle
+                .poll(cx)
+                .map(|val| val.expect("task failed to execute")),
+            #[cfg(tokio1)]
+            JoinHandleProj::Tokio1(handle) => handle
                 .poll(cx)
                 .map(|val| val.expect("task failed to execute")),
             #[cfg(smol)]

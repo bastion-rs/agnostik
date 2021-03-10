@@ -16,6 +16,11 @@ mod tokio;
 #[cfg(tokio)]
 pub use tokio::*;
 
+#[cfg(tokio1)]
+mod tokio1;
+#[cfg(tokio1)]
+pub use tokio1::*;
+
 #[cfg(smol)]
 mod smol;
 #[cfg(smol)]

@@ -171,6 +171,9 @@ static EXECUTOR: Lazy<executor::AsyncStdExecutor> = Lazy::new(|| executor::Async
 #[cfg(tokio)]
 static EXECUTOR: Lazy<executor::TokioExecutor> = Lazy::new(|| executor::TokioExecutor::new());
 
+#[cfg(tokio1)]
+static EXECUTOR: Lazy<executor::Tokio1Executor> = Lazy::new(|| executor::Tokio1Executor::new());
+
 #[cfg(smol)]
 static EXECUTOR: Lazy<executor::SmolExecutor> = Lazy::new(|| executor::SmolExecutor);
 
@@ -249,6 +252,22 @@ impl Agnostik {
     }
 
     /// Returns an [LocalAgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
+    ///
+    /// **Attention:** This method will create a new [Runtime] object using the [Runtime::new]
+    /// method and will panic if it fails to create the [Runtime] object.
+    /// If you want to use your own [Runtime] object, use [tokio_with_runtime] instead.
+    ///
+    /// [Tokio]: https://docs.rs/tokio
+    /// [Runtime]: tokio1_crate::runtime::Runtime
+    /// [Runtime::new]: tokio1_crate::runtime::Runtime::new
+    /// [tokio_with_runtime]: Self::tokio_with_runtime
+    /// [LocalAgnostikExecutor]: LocalAgnostikExecutor
+    #[cfg(tokio1)]
+    pub fn tokio() -> impl LocalAgnostikExecutor {
+        executor::Tokio1Executor::new()
+    }
+
+    /// Returns an [LocalAgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
     /// It will use the given [Runtime] object to spawn, and block_on futures. The spawn_blocking method
     /// will use the [tokio::task::spawn_blocking] method.
     ///
@@ -262,6 +281,22 @@ impl Agnostik {
         runtime: tokio_crate::runtime::Runtime,
     ) -> impl LocalAgnostikExecutor {
         executor::TokioExecutor::with_runtime(runtime)
+    }
+
+    /// Returns an [LocalAgnostikExecutor], that will use the [Tokio] runtime to spawn futures.
+    /// It will use the given [Runtime] object to spawn, and block_on futures. The spawn_blocking method
+    /// will use the [tokio::task::spawn_blocking] method.
+    ///
+    /// [tokio::task::spawn_blocking]: tokio1_crate::task::spawn_blocking
+    /// [Tokio]: https://docs.rs/tokio
+    /// [Runtime]: tokio1_crate::runtime::Runtime
+    /// [tokio_with_runtime]: ./fn.tokio_with_runtime.html
+    /// [LocalAgnostikExecutor]: LocalAgnostikExecutor
+    #[cfg(tokio1)]
+    pub fn tokio_with_runtime(
+        runtime: tokio1_crate::runtime::Runtime,
+    ) -> impl LocalAgnostikExecutor {
+        executor::Tokio1Executor::with_runtime(runtime)
     }
 
     /// Returns an [LocalAgnostikExecutor] that will use the [smol] runtime, to spawn and run futures.
@@ -317,13 +352,27 @@ where
 
 /// This method will set the [`tokio Runtime`] in the global executor.
 ///
-/// [`tokio Runtime`]: https://docs.rs/tokio/0.2.21/tokio/runtime/struct.Runtime.html
+/// [`tokio Runtime`]: tokio_crate::runtime::Runtime
 #[cfg(tokio)]
 pub fn set_runtime(runtime: tokio_crate::runtime::Runtime) {
     use std::any::Any;
 
     let executor = executor() as &dyn Any;
     match executor.downcast_ref::<executor::TokioExecutor>() {
+        Some(executor) => executor.set_runtime(runtime),
+        None => unreachable!(),
+    }
+}
+
+/// This method will set the [`tokio Runtime`] in the global executor.
+///
+/// [`tokio Runtime`]: tokio1_crate::runtime::Runtime
+#[cfg(tokio1)]
+pub fn set_runtime(runtime: tokio1_crate::runtime::Runtime) {
+    use std::any::Any;
+
+    let executor = executor() as &dyn Any;
+    match executor.downcast_ref::<executor::Tokio1Executor>() {
         Some(executor) => executor.set_runtime(runtime),
         None => unreachable!(),
     }

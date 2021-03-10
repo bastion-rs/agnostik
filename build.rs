@@ -4,6 +4,7 @@ use std::env;
 const EXECUTOR_FEATURES: &[&str] = &[
     "CARGO_FEATURE_RUNTIME_BASTION",
     "CARGO_FEATURE_RUNTIME_TOKIO",
+    "CARGO_FEATURE_RUNTIME_TOKIO1",
     "CARGO_FEATURE_RUNTIME_ASYNCSTD",
     "CARGO_FEATURE_RUNTIME_SMOL",
 ];
@@ -18,10 +19,11 @@ fn main() {
     cfg_aliases! {
         bastion: { feature = "runtime_bastion" },
         tokio: { feature = "runtime_tokio" },
+        tokio1: { feature = "runtime_tokio1" },
         async_std: { feature = "runtime_asyncstd" },
         smol: { feature = "runtime_smol" },
 
-        local_spawn: { any(tokio, async_std) },
-        enable: { any(smol, tokio, async_std, bastion) },
+        local_spawn: { any(tokio, tokio1, async_std) },
+        enable: { any(smol, tokio, tokio1, async_std, bastion) },
     }
 }
