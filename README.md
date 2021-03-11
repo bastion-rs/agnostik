@@ -37,7 +37,8 @@ You can choose the executor, by using cargo features.
 There can only be one enabled runtime.
 Valid features are: 
 - `runtime_bastion` to use the [Bastion Executor](https://crates.io/crates/bastion-executor)
-- `runtime_tokio` to use the [Tokio](https://tokio.rs) runtime
+- `runtime_tokio` to use the [Tokio version >0.3.4](https://tokio.rs) runtime
+- `runtime_tokio1` to use the [Tokio version 1.*](https://tokio.rs) runtime
 - `runtime_asyncstd` to use the [AsyncStd](https://async.rs) runtime
 - `runtime_smol` to use the new and awesome [smol](https://docs.rs/smol) runtime
 
